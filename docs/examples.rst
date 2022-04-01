@@ -3,4 +3,6 @@
 Examples
 ========
 
-Currently there are no examples. This is a work-in-progress.
+You can find examples of using the ``fancytypes`` library in a series of
+notebooks found in the directory ``<root>/examples`` of the repository, where
+``<root>`` is the root of the ``fancytypes`` repository.

@@ -163,9 +163,10 @@ class Updatable():
         that it is only the core attributes which can be updated directly.
     """
     def __init__(self, checkable_obj):
-        czekitout.if_instance_of_any_accepted_types(obj=checkable_obj,
-                                                    obj_name="checkable_obj",
-                                                    accepted_types=(Checkable,))
+        kwargs = {"obj": checkable_obj,
+                  "obj_name": "checkable_obj",
+                  "accepted_types": (Checkable,)}
+        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
         self._checkable_obj = checkable_obj
 
         return None
@@ -225,7 +226,7 @@ class Updatable():
 
     @property
     def core_attrs(self):
-        return self._checkable_obj.core_attrs()
+        return self._checkable_obj.core_attrs
 
 
 
@@ -342,7 +343,7 @@ class PreSerializable():
         
         if core_attr_names != sorted(list(checkable_obj.core_attrs.keys())):
             raise KeyError(_pre_serializable_err_msg_3)
-        for core_attr_name in self.attrs:
+        for core_attr_name in core_attr_names:
             if not callable(de_pre_serialization_funcs[core_attr_name]):
                 raise TypeError(_pre_serializable_err_msg_4)
         
@@ -466,7 +467,7 @@ class PreSerializable():
 
     @property
     def core_attrs(self):
-        return self._checkable_obj.core_attrs()
+        return self._checkable_obj.core_attrs
 
 
 
@@ -604,7 +605,7 @@ class PreSerializableAndUpdatable(PreSerializable):
         """
         self._updatable_obj.update(core_attr_subset)
         
-        ctor_params = self._updatable_obj.core_attrs()
+        ctor_params = self._updatable_obj.core_attrs
         self._checkable_obj = Checkable(ctor_params,
                                         self._validation_and_conversion_funcs)
 
