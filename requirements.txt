@@ -1,0 +1,3 @@
+numpy
+pytest
+czekitout @ git+https://github.com/mrfitzpa/czekitout.git

@@ -1,0 +1,32 @@
+fancytypes.PreSerializable
+==========================
+
+.. currentmodule:: fancytypes
+
+.. autoclass:: PreSerializable
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PreSerializable.de_pre_serialize
+      ~PreSerializable.pre_serialize
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PreSerializable.core_attrs
+   
+   
