@@ -193,7 +193,8 @@ def read_extra_requirements():
         Extracted set of extra library requirements.
     """
     extra_requirements = \
-        {'doc': read_requirements_file('requirements-doc.txt')}
+        {'doc': read_requirements_file('requirements-doc.txt'),
+         'examples': read_requirements_file('requirements-examples.txt')}
     extra_requirements['all'] = [requirement for requirement_subset
                                  in extra_requirements.values()
                                  for requirement in requirement_subset]

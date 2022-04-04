@@ -45,7 +45,7 @@ install ``jupyter-notebook`` by running the following commands from the root of
 the repository::
 
   pip3 install --upgrade pip
-  pip3 install -r requirements-extras.txt
+  pip3 install -r requirements-examples.txt
 
 Since the repository tracks the notebooks under their original basenames, we
 recommend that you copy whatever original notebook of interest and rename it to

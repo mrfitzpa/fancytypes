@@ -139,12 +139,6 @@
     <span class="sd">&quot;&quot;&quot;Print information about the version of ``fancytypes`` and libraries it </span>
 <span class="sd">    uses.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">version_summary</span><span class="p">)</span>
 
@@ -235,9 +229,10 @@
 <span class="sd">        that it is only the core attributes which can be updated directly.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkable_obj</span><span class="p">):</span>
-        <span class="n">czekitout</span><span class="o">.</span><span class="n">if_instance_of_any_accepted_types</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">checkable_obj</span><span class="p">,</span>
-                                                    <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;checkable_obj&quot;</span><span class="p">,</span>
-                                                    <span class="n">accepted_types</span><span class="o">=</span><span class="p">(</span><span class="n">Checkable</span><span class="p">,))</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">checkable_obj</span><span class="p">,</span>
+                  <span class="s2">&quot;obj_name&quot;</span><span class="p">:</span> <span class="s2">&quot;checkable_obj&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;accepted_types&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Checkable</span><span class="p">,)}</span>
+        <span class="n">czekitout</span><span class="o">.</span><span class="n">check</span><span class="o">.</span><span class="n">if_instance_of_any_accepted_types</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span> <span class="o">=</span> <span class="n">checkable_obj</span>
 
         <span class="k">return</span> <span class="kc">None</span>
@@ -267,9 +262,6 @@
 <span class="sd">            :attr:`fancytypes.Updatable.core_attrs` are ignored in the update</span>
 <span class="sd">            procedure along with the corresponding `dict` values.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">czekitout</span><span class="o">.</span><span class="n">check</span><span class="o">.</span><span class="n">if_dict_like</span><span class="p">(</span><span class="n">core_attr_subset</span><span class="p">,</span> <span class="s2">&quot;core_attr_subset&quot;</span><span class="p">)</span>
         <span class="n">core_attrs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">core_attr_subset</span><span class="p">)</span>
@@ -297,7 +289,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">core_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span></div>
 
 
 
@@ -414,7 +406,7 @@
         
         <span class="k">if</span> <span class="n">core_attr_names</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_3</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">core_attr_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">core_attr_name</span> <span class="ow">in</span> <span class="n">core_attr_names</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">de_pre_serialization_funcs</span><span class="p">[</span><span class="n">core_attr_name</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_4</span><span class="p">)</span>
         
@@ -515,9 +507,6 @@
 <span class="sd">        serializable object into its original type, i.e. de-pre-serialization is</span>
 <span class="sd">        the reverse process of pre-serialization.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        serializable_rep : `dict`</span>
@@ -538,7 +527,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">core_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span></div>
 
 
 
@@ -670,13 +659,10 @@
 <span class="sd">            ignored in the update procedure along with the corresponding `dict`</span>
 <span class="sd">            values.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_updatable_obj</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">core_attr_subset</span><span class="p">)</span>
         
-        <span class="n">ctor_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="p">()</span>
+        <span class="n">ctor_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatable_obj</span><span class="o">.</span><span class="n">core_attrs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span> <span class="o">=</span> <span class="n">Checkable</span><span class="p">(</span><span class="n">ctor_params</span><span class="p">,</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">_validation_and_conversion_funcs</span><span class="p">)</span>
 
@@ -736,7 +722,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2022, Matthew Fitzpatrick.
-      <span class="lastupdated">Last updated on Mar 31, 2022.
+      <span class="lastupdated">Last updated on Apr 03, 2022.
       </span></p>
   </div>
 

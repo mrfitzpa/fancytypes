@@ -19,8 +19,8 @@ Learning how to use fancytypes
 ------------------------------
 
 For those new to the ``fancytypes`` library, it is recommended that they take a
-look at the :ref:`examples_sec` page, which contains a code example that shows
-how one can use the ``fancytypes`` library. While going through the example,
+look at the :ref:`examples_sec` page, which contain a code examples that show
+how one can use the ``fancytypes`` library. While going through the examples,
 readers can consult the :ref:`reference_guide_sec` to understand what each line
 of code is doing.
 

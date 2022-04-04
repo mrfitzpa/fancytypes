@@ -67,12 +67,6 @@ def show_config():
     """Print information about the version of ``fancytypes`` and libraries it 
     uses.
 
-    Parameters
-    ----------
-
-    Returns
-    -------
-
     """
     print(version.version_summary)
 
@@ -195,9 +189,6 @@ class Updatable():
             are not keys of the instance attribute
             :attr:`fancytypes.Updatable.core_attrs` are ignored in the update
             procedure along with the corresponding `dict` values.
-
-        Returns
-        -------
 
         """
         czekitout.check.if_dict_like(core_attr_subset, "core_attr_subset")
@@ -444,9 +435,6 @@ class PreSerializable():
         serializable object into its original type, i.e. de-pre-serialization is
         the reverse process of pre-serialization.
 
-        Parameters
-        ----------
-
         Returns
         -------
         serializable_rep : `dict`
@@ -598,9 +586,6 @@ class PreSerializableAndUpdatable(PreSerializable):
             :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` are
             ignored in the update procedure along with the corresponding `dict`
             values.
-
-        Returns
-        -------
 
         """
         self._updatable_obj.update(core_attr_subset)

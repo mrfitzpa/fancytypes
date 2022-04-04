@@ -1,7 +1,7 @@
 .. _reference_guide_sec:
 
 fancytypes reference guide
-===========================
+==========================
 
 .. autosummary::
    :toctree: _autosummary
