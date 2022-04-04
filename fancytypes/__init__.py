@@ -192,7 +192,7 @@ class Updatable():
 
         """
         czekitout.check.if_dict_like(core_attr_subset, "core_attr_subset")
-        core_attrs = copy.deepcopy(core_attr_subset)
+        core_attrs = core_attr_subset.copy()
 
         names_of_core_attrs_to_update = core_attr_subset.keys()
 
