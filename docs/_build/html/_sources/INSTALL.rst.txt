@@ -38,11 +38,11 @@ To uninstall ``fancytypes``, all you need to type is::
 Exploring examples of using fancytypes
 --------------------------------------
 
-Examples of using fancytypes can be found in a set of notebooks in the directory
-``<root>/examples``, where ``<root>`` is the root of the repository. In order to
-open the notebooks and run cells, one must install ``jupyter-notebook``. One can
-install ``jupyter-notebook`` by running the following commands from the root of
-the repository::
+Examples of using ``fancytypes`` can be found in a set of notebooks in the
+directory ``<root>/examples``, where ``<root>`` is the root of the
+repository. In order to open the notebooks and run cells, one must install
+``jupyter-notebook``. One can install ``jupyter-notebook`` by running the
+following commands from the root of the repository::
 
   pip3 install --upgrade pip
   pip3 install -r requirements-examples.txt
