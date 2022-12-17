@@ -19,6 +19,9 @@ docs/_build/doctrees/environment.pickle
 # Ignore .pyc files.
 *.pyc
 
+# Ignore JSON files.
+*.json
+
 # Ignore backup files.
 \#*#
 *.bak

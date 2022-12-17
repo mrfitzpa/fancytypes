@@ -14,10 +14,17 @@ classes that inherit some subset of the aforementioned features.
 # For performing deep copies.
 import copy
 
+# For serializing and deserializing JSON objects.
+import json
+
+# For performing operations on file and directory paths.
+import pathlib
 
 
-# For validating objects.
+
+# For validating and converting objects.
 import czekitout.check
+import czekitout.convert
 
 
 
@@ -435,6 +442,9 @@ class PreSerializable():
         serializable object into its original type, i.e. de-pre-serialization is
         the reverse process of pre-serialization.
 
+        Parameters
+        ----------
+
         Returns
         -------
         serializable_rep : `dict`
@@ -450,6 +460,139 @@ class PreSerializable():
         serializable_rep = data
 
         return serializable_rep
+
+
+
+    def dumps(self):
+        r"""Serialize instance.
+        
+        Parameters
+        ----------
+
+        Returns
+        -------
+        serialized_rep : `dict`
+            A serialized representation of an instance.
+
+        """
+        serializable_rep = self.pre_serialize()
+        serialized_rep = json.dumps(serializable_rep)
+
+        return serialized_rep
+
+
+
+    def dump(self, filename, overwrite=False):
+        r"""Serialize instance and save the result in a JSON file.
+
+        Parameters
+        ----------
+        filename : `str`
+            The relative or absolute path to the JSON file in which to store the
+            serialized representation of an instance.
+        overwrite : `bool`, optional
+            If ``overwrite`` is set to ``False`` and a file exists at the path
+            ``filename``, then the serialized instance is not written to that
+            file and an exception is raised. Otherwise, the serialized instance
+            will be written to that file barring no other issues occur.
+
+        Returns
+        -------
+
+        """
+        kwargs = {"obj": overwrite, "obj_name": "overwrite"}
+        overwrite = czekitout.convert.to_bool(**kwargs)
+        
+        kwargs = {"obj": filename, "obj_name": "filename"}
+        filename = czekitout.convert.to_str_from_path_like(**kwargs)
+        if pathlib.Path(filename).is_file():
+            if not overwrite:
+                raise IOError(_pre_serializable_err_msg_9.format(filename))
+
+        serializable_rep = self.pre_serialize()
+
+        try:
+            with open(filename, "w", encoding="utf-8") as file_obj:
+                json.dump(serializable_rep,
+                          file_obj,
+                          ensure_ascii=False,
+                          indent=4)
+        except:
+            raise IOError(_pre_serializable_err_msg_10.format(filename))
+            
+        return None
+
+
+
+    @classmethod
+    def loads(cls, serialized_rep):
+        r"""Construct an instance from a serialized representation.
+
+        Users can generate serialized representations using the method
+        :meth:`fancytypes.PreSerializable.dumps`.
+
+        Parameters
+        ----------
+        serialized_rep : `str` | `bytes` | `bytearray`
+            The serialized representation.
+
+        Returns
+        -------
+        pre_serializable_obj : :class:`fancytypes.PreSerializable`
+            An instance constructed from the serialized representation.
+
+        """
+        kwargs = {"obj": serialized_rep,
+                  "obj_name": "serialized_rep",
+                  "accepted_types": (str, bytes, bytearray)}
+        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
+        
+        try:
+            serializable_rep = json.loads(serialized_rep)
+        except json.decoder.JSONDecodeError:
+            raise ValueError(_pre_serializable_err_msg_11)
+        except BaseException as err:
+            raise err
+
+        pre_serializable_obj = cls.de_pre_serialize(serializable_rep)
+                
+        return pre_serializable_obj
+
+
+
+    @classmethod
+    def load(cls, filename):
+        r"""Construct an instance from a serialized representation that is 
+        stored in a JSON file.
+
+        Users can save serialized representations to JSON files using the method
+        :meth:`fancytypes.PreSerializable.dump`.
+
+        Parameters
+        ----------
+        filename : `str`
+            The relative or absolute path to the JSON file that is storing the
+            serialized representation of an instance.
+
+        Returns
+        -------
+        pre_serializable_obj : :class:`fancytypes.PreSerializable`
+            An instance constructed from the serialized representation
+            stored in the JSON file.
+
+        """
+        kwargs = {"obj": filename, "obj_name": "filename"}
+        filename = czekitout.convert.to_str_from_path_like(**kwargs)
+        
+        try:
+            with open(filename, 'r') as file_obj:
+                serializable_rep = json.load(file_obj)
+        except:
+            raise IOError(_pre_serializable_err_msg_12.format(filename))
+
+        pre_serializable_obj = cls.de_pre_serialize(serializable_rep)
+                
+        return pre_serializable_obj
 
 
 
@@ -603,40 +746,43 @@ class PreSerializableAndUpdatable(PreSerializable):
 ###########################
 
 _checkable_err_msg_1 = \
-    ("The parameters ``ctor_params`` and ``validation_and_conversion_funcs`` "
-     "have mismatching key sets.")
-
+    ("The objects ``ctor_params`` and ``validation_and_conversion_funcs`` have "
+     "mismatching key sets.")
 _checkable_err_msg_2 = \
-    ("The parameter ``validation_and_conversion_funcs`` must be a dictionary "
-     "with values set to only callable objects.")
+    ("The object ``validation_and_conversion_funcs`` must be a dictionary with "
+     "values set to only callable objects.")
 
 _pre_serializable_err_msg_1 = \
-    ("The parameter ``ctor_params`` and the private class attribute "
+    ("The object ``ctor_params`` and the private class attribute "
      "``_pre_serialization_funcs`` have mismatching key sets.")
-
 _pre_serializable_err_msg_2 = \
     ("The private class attribute ``_pre_serialization_funcs`` must be a "
      "dictionary with values set to only callable objects.")
-
 _pre_serializable_err_msg_3 = \
-    ("The parameter ``ctor_params`` and the private class attribute "
+    ("The object ``ctor_params`` and the private class attribute "
      "``_de_pre_serialization_funcs`` have mismatching key sets.")
-
 _pre_serializable_err_msg_4 = \
     ("The private class attribute ``_de_pre_serialization_funcs`` must be a "
      "dictionary with values set to only callable objects.")
-
 _pre_serializable_err_msg_5 = \
     ("An error occurred in testing the instance method ``pre_serialize``: see "
      "the remaining traceback for details.")
-
 _pre_serializable_err_msg_6 = \
     ("An error occurred in testing part of the class method "
      "``de_pre_serialize``: see the remaining traceback for details.")
-
 _pre_serializable_err_msg_7 = \
-    ("The parameter ``serializable_rep`` is missing the key ``'{}'``.")
-
+    ("The object ``serializable_rep`` is missing the key ``'{}'``.")
 _pre_serializable_err_msg_8 = \
-    ("An error occurred in attempting to construct the parameter ``{}`` from "
-     "a serializable representation.")
+    ("An error occurred in attempting to construct the object ``{}`` from a "
+     "serializable representation.")
+_pre_serializable_err_msg_9 = \
+    ("Cannot save the serialized representation to a file at the path ``'{}'`` "
+     "because a file already exists there and the object ``overwrite`` was set "
+     "to ``False``, which prohibits overwriting the original file.")
+_pre_serializable_err_msg_10 = \
+    ("An error occurred in trying to save the serialized representation to the "
+     "file at the path ``'{}'``: see the traceback for details.")
+_pre_serializable_err_msg_11 = \
+    ("The object ``serialized_rep`` must be a valid JSON document.")
+_pre_serializable_err_msg_12 = \
+    ("The filename ``'{}'`` is invalid: see the traceback for details.")
