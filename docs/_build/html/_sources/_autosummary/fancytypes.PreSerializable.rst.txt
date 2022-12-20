@@ -17,6 +17,10 @@ fancytypes.PreSerializable
       :nosignatures:
    
       ~PreSerializable.de_pre_serialize
+      ~PreSerializable.dump
+      ~PreSerializable.dumps
+      ~PreSerializable.load
+      ~PreSerializable.loads
       ~PreSerializable.pre_serialize
    
    

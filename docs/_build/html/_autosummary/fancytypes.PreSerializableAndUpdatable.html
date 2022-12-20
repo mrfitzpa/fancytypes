@@ -15,6 +15,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -81,11 +82,11 @@
            <div itemprop="articleBody">
              
   <section id="fancytypes-preserializableandupdatable">
-<h1><span class="section-number">2.4. </span>fancytypes.PreSerializableAndUpdatable<a class="headerlink" href="#fancytypes-preserializableandupdatable" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">2.4. </span>fancytypes.PreSerializableAndUpdatable<a class="headerlink" href="#fancytypes-preserializableandupdatable" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="fancytypes.PreSerializableAndUpdatable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PreSerializableAndUpdatable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctor_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fancytypes.html#PreSerializableAndUpdatable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fancytypes.PreSerializableAndUpdatable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable" title="fancytypes.PreSerializable"><code class="xref py py-class docutils literal notranslate"><span class="pre">fancytypes.PreSerializable</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable" title="fancytypes.PreSerializable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PreSerializable</span></code></a></p>
 <p>A type with updatable core attributes, that is pre-serializable, that 
 can be constructed from a serializable representation, and that enforces 
 validation upon construction.</p>
@@ -184,6 +185,18 @@ instance of <code class="docutils literal notranslate"><span class="pre">cls</sp
 <tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.de_pre_serialize" title="fancytypes.PreSerializableAndUpdatable.de_pre_serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">de_pre_serialize</span></code></a>(serializable_rep)</p></td>
 <td><p>Construct an instance from a serializable representation.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.dump" title="fancytypes.PreSerializableAndUpdatable.dump"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dump</span></code></a>(filename[, overwrite])</p></td>
+<td><p>Serialize instance and save the result in a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.dumps" title="fancytypes.PreSerializableAndUpdatable.dumps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dumps</span></code></a>()</p></td>
+<td><p>Serialize instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.load" title="fancytypes.PreSerializableAndUpdatable.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>(filename)</p></td>
+<td><p>Construct an instance from a serialized representation that is  stored in a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.loads" title="fancytypes.PreSerializableAndUpdatable.loads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loads</span></code></a>(serialized_rep)</p></td>
+<td><p>Construct an instance from a serialized representation.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.pre_serialize" title="fancytypes.PreSerializableAndUpdatable.pre_serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_serialize</span></code></a>()</p></td>
 <td><p>Pre-serialize instance.</p></td>
 </tr>
@@ -201,6 +214,18 @@ instance of <code class="docutils literal notranslate"><span class="pre">cls</sp
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.de_pre_serialize" title="fancytypes.PreSerializableAndUpdatable.de_pre_serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">de_pre_serialize</span></code></a></p></td>
 <td><p>Construct an instance from a serializable representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.dump" title="fancytypes.PreSerializableAndUpdatable.dump"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dump</span></code></a></p></td>
+<td><p>Serialize instance and save the result in a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.dumps" title="fancytypes.PreSerializableAndUpdatable.dumps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dumps</span></code></a></p></td>
+<td><p>Serialize instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.load" title="fancytypes.PreSerializableAndUpdatable.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></p></td>
+<td><p>Construct an instance from a serialized representation that is  stored in a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.loads" title="fancytypes.PreSerializableAndUpdatable.loads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loads</span></code></a></p></td>
+<td><p>Construct an instance from a serialized representation.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fancytypes.PreSerializableAndUpdatable.pre_serialize" title="fancytypes.PreSerializableAndUpdatable.pre_serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_serialize</span></code></a></p></td>
 <td><p>Pre-serialize instance.</p></td>
@@ -245,6 +270,89 @@ representations can be generated using the instance method
 <dd class="field-even"><dl>
 <dt><strong>pre_serializable_obj</strong><span class="classifier"><a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable" title="fancytypes.PreSerializable"><code class="xref py py-class docutils literal notranslate"><span class="pre">fancytypes.PreSerializable</span></code></a></span></dt><dd><p>An instance constructed from the serializable representation
 <code class="docutils literal notranslate"><span class="pre">serializable_rep</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fancytypes.PreSerializableAndUpdatable.dump">
+<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fancytypes.PreSerializableAndUpdatable.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize instance and save the result in a JSON file.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>filename</strong><span class="classifier"><cite>str</cite></span></dt><dd><p>The relative or absolute path to the JSON file in which to store the
+serialized representation of an instance.</p>
+</dd>
+<dt><strong>overwrite</strong><span class="classifier"><cite>bool</cite>, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> and a file exists at the path
+<code class="docutils literal notranslate"><span class="pre">filename</span></code>, then the serialized instance is not written to that
+file and an exception is raised. Otherwise, the serialized instance
+will be written to that file barring no other issues occur.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"></dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fancytypes.PreSerializableAndUpdatable.dumps">
+<span class="sig-name descname"><span class="pre">dumps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fancytypes.PreSerializableAndUpdatable.dumps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize instance.</p>
+<dl class="field-list">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl>
+<dt><strong>serialized_rep</strong><span class="classifier"><cite>dict</cite></span></dt><dd><p>A serialized representation of an instance.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fancytypes.PreSerializableAndUpdatable.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fancytypes.PreSerializableAndUpdatable.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an instance from a serialized representation that is 
+stored in a JSON file.</p>
+<p>Users can save serialized representations to JSON files using the method
+<a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable.dump" title="fancytypes.PreSerializable.dump"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fancytypes.PreSerializable.dump()</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>filename</strong><span class="classifier"><cite>str</cite></span></dt><dd><p>The relative or absolute path to the JSON file that is storing the
+serialized representation of an instance.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>pre_serializable_obj</strong><span class="classifier"><a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable" title="fancytypes.PreSerializable"><code class="xref py py-class docutils literal notranslate"><span class="pre">fancytypes.PreSerializable</span></code></a></span></dt><dd><p>An instance constructed from the serialized representation
+stored in the JSON file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fancytypes.PreSerializableAndUpdatable.loads">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialized_rep</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fancytypes.PreSerializableAndUpdatable.loads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an instance from a serialized representation.</p>
+<p>Users can generate serialized representations using the method
+<a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable.dumps" title="fancytypes.PreSerializable.dumps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fancytypes.PreSerializable.dumps()</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>serialized_rep</strong><span class="classifier"><cite>str</cite> | <cite>bytes</cite> | <cite>bytearray</cite></span></dt><dd><p>The serialized representation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>pre_serializable_obj</strong><span class="classifier"><a class="reference internal" href="fancytypes.PreSerializable.html#fancytypes.PreSerializable" title="fancytypes.PreSerializable"><code class="xref py py-class docutils literal notranslate"><span class="pre">fancytypes.PreSerializable</span></code></a></span></dt><dd><p>An instance constructed from the serialized representation.</p>
 </dd>
 </dl>
 </dd>
@@ -317,7 +425,7 @@ values.</p>
 
   <div role="contentinfo">
     <p>&#169; Copyright 2022, Matthew Fitzpatrick.
-      <span class="lastupdated">Last updated on Apr 18, 2022.
+      <span class="lastupdated">Last updated on Dec 19, 2022.
       </span></p>
   </div>
 

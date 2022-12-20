@@ -442,9 +442,6 @@ class PreSerializable():
         serializable object into its original type, i.e. de-pre-serialization is
         the reverse process of pre-serialization.
 
-        Parameters
-        ----------
-
         Returns
         -------
         serializable_rep : `dict`
@@ -466,9 +463,6 @@ class PreSerializable():
     def dumps(self):
         r"""Serialize instance.
         
-        Parameters
-        ----------
-
         Returns
         -------
         serialized_rep : `dict`

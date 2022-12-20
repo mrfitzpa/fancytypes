@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,10 +87,17 @@
 <span class="c1"># For performing deep copies.</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 
+<span class="c1"># For serializing and deserializing JSON objects.</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="c1"># For performing operations on file and directory paths.</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
 
 
-<span class="c1"># For validating objects.</span>
+
+<span class="c1"># For validating and converting objects.</span>
 <span class="kn">import</span> <span class="nn">czekitout.check</span>
+<span class="kn">import</span> <span class="nn">czekitout.convert</span>
 
 
 
@@ -525,6 +533,136 @@
 
 
 
+<div class="viewcode-block" id="PreSerializable.dumps"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.dumps">[docs]</a>    <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        serialized_rep : `dict`</span>
+<span class="sd">            A serialized representation of an instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">serializable_rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_serialize</span><span class="p">()</span>
+        <span class="n">serialized_rep</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">serializable_rep</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">serialized_rep</span></div>
+
+
+
+<div class="viewcode-block" id="PreSerializable.dump"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance and save the result in a JSON file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : `str`</span>
+<span class="sd">            The relative or absolute path to the JSON file in which to store the</span>
+<span class="sd">            serialized representation of an instance.</span>
+<span class="sd">        overwrite : `bool`, optional</span>
+<span class="sd">            If ``overwrite`` is set to ``False`` and a file exists at the path</span>
+<span class="sd">            ``filename``, then the serialized instance is not written to that</span>
+<span class="sd">            file and an exception is raised. Otherwise, the serialized instance</span>
+<span class="sd">            will be written to that file barring no other issues occur.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">overwrite</span><span class="p">,</span> <span class="s2">&quot;obj_name&quot;</span><span class="p">:</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">}</span>
+        <span class="n">overwrite</span> <span class="o">=</span> <span class="n">czekitout</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">to_bool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;obj_name&quot;</span><span class="p">:</span> <span class="s2">&quot;filename&quot;</span><span class="p">}</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">czekitout</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">to_str_from_path_like</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_9</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="n">serializable_rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_serialize</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">serializable_rep</span><span class="p">,</span>
+                          <span class="n">file_obj</span><span class="p">,</span>
+                          <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_10</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+            
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="PreSerializable.loads"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.loads">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">loads</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">serialized_rep</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation.</span>
+
+<span class="sd">        Users can generate serialized representations using the method</span>
+<span class="sd">        :meth:`fancytypes.PreSerializable.dumps`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        serialized_rep : `str` | `bytes` | `bytearray`</span>
+<span class="sd">            The serialized representation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pre_serializable_obj : :class:`fancytypes.PreSerializable`</span>
+<span class="sd">            An instance constructed from the serialized representation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">serialized_rep</span><span class="p">,</span>
+                  <span class="s2">&quot;obj_name&quot;</span><span class="p">:</span> <span class="s2">&quot;serialized_rep&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;accepted_types&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)}</span>
+        <span class="n">czekitout</span><span class="o">.</span><span class="n">check</span><span class="o">.</span><span class="n">if_instance_of_any_accepted_types</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">serializable_rep</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">serialized_rep</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_11</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">err</span>
+
+        <span class="n">pre_serializable_obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">de_pre_serialize</span><span class="p">(</span><span class="n">serializable_rep</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">pre_serializable_obj</span></div>
+
+
+
+<div class="viewcode-block" id="PreSerializable.load"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation that is </span>
+<span class="sd">        stored in a JSON file.</span>
+
+<span class="sd">        Users can save serialized representations to JSON files using the method</span>
+<span class="sd">        :meth:`fancytypes.PreSerializable.dump`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : `str`</span>
+<span class="sd">            The relative or absolute path to the JSON file that is storing the</span>
+<span class="sd">            serialized representation of an instance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pre_serializable_obj : :class:`fancytypes.PreSerializable`</span>
+<span class="sd">            An instance constructed from the serialized representation</span>
+<span class="sd">            stored in the JSON file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;obj_name&quot;</span><span class="p">:</span> <span class="s2">&quot;filename&quot;</span><span class="p">}</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">czekitout</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">to_str_from_path_like</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                <span class="n">serializable_rep</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_12</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="n">pre_serializable_obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">de_pre_serialize</span><span class="p">(</span><span class="n">serializable_rep</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">pre_serializable_obj</span></div>
+
+
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">core_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span></div>
@@ -675,43 +813,46 @@
 <span class="c1">###########################</span>
 
 <span class="n">_checkable_err_msg_1</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;The parameters ``ctor_params`` and ``validation_and_conversion_funcs`` &quot;</span>
-     <span class="s2">&quot;have mismatching key sets.&quot;</span><span class="p">)</span>
-
+    <span class="p">(</span><span class="s2">&quot;The objects ``ctor_params`` and ``validation_and_conversion_funcs`` have &quot;</span>
+     <span class="s2">&quot;mismatching key sets.&quot;</span><span class="p">)</span>
 <span class="n">_checkable_err_msg_2</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;The parameter ``validation_and_conversion_funcs`` must be a dictionary &quot;</span>
-     <span class="s2">&quot;with values set to only callable objects.&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="s2">&quot;The object ``validation_and_conversion_funcs`` must be a dictionary with &quot;</span>
+     <span class="s2">&quot;values set to only callable objects.&quot;</span><span class="p">)</span>
 
 <span class="n">_pre_serializable_err_msg_1</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;The parameter ``ctor_params`` and the private class attribute &quot;</span>
+    <span class="p">(</span><span class="s2">&quot;The object ``ctor_params`` and the private class attribute &quot;</span>
      <span class="s2">&quot;``_pre_serialization_funcs`` have mismatching key sets.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_2</span> <span class="o">=</span> \
     <span class="p">(</span><span class="s2">&quot;The private class attribute ``_pre_serialization_funcs`` must be a &quot;</span>
      <span class="s2">&quot;dictionary with values set to only callable objects.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_3</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;The parameter ``ctor_params`` and the private class attribute &quot;</span>
+    <span class="p">(</span><span class="s2">&quot;The object ``ctor_params`` and the private class attribute &quot;</span>
      <span class="s2">&quot;``_de_pre_serialization_funcs`` have mismatching key sets.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_4</span> <span class="o">=</span> \
     <span class="p">(</span><span class="s2">&quot;The private class attribute ``_de_pre_serialization_funcs`` must be a &quot;</span>
      <span class="s2">&quot;dictionary with values set to only callable objects.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_5</span> <span class="o">=</span> \
     <span class="p">(</span><span class="s2">&quot;An error occurred in testing the instance method ``pre_serialize``: see &quot;</span>
      <span class="s2">&quot;the remaining traceback for details.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_6</span> <span class="o">=</span> \
     <span class="p">(</span><span class="s2">&quot;An error occurred in testing part of the class method &quot;</span>
      <span class="s2">&quot;``de_pre_serialize``: see the remaining traceback for details.&quot;</span><span class="p">)</span>
-
 <span class="n">_pre_serializable_err_msg_7</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;The parameter ``serializable_rep`` is missing the key ``&#39;</span><span class="si">{}</span><span class="s2">&#39;``.&quot;</span><span class="p">)</span>
-
+    <span class="p">(</span><span class="s2">&quot;The object ``serializable_rep`` is missing the key ``&#39;</span><span class="si">{}</span><span class="s2">&#39;``.&quot;</span><span class="p">)</span>
 <span class="n">_pre_serializable_err_msg_8</span> <span class="o">=</span> \
-    <span class="p">(</span><span class="s2">&quot;An error occurred in attempting to construct the parameter ``</span><span class="si">{}</span><span class="s2">`` from &quot;</span>
-     <span class="s2">&quot;a serializable representation.&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="s2">&quot;An error occurred in attempting to construct the object ``</span><span class="si">{}</span><span class="s2">`` from a &quot;</span>
+     <span class="s2">&quot;serializable representation.&quot;</span><span class="p">)</span>
+<span class="n">_pre_serializable_err_msg_9</span> <span class="o">=</span> \
+    <span class="p">(</span><span class="s2">&quot;Cannot save the serialized representation to a file at the path ``&#39;</span><span class="si">{}</span><span class="s2">&#39;`` &quot;</span>
+     <span class="s2">&quot;because a file already exists there and the object ``overwrite`` was set &quot;</span>
+     <span class="s2">&quot;to ``False``, which prohibits overwriting the original file.&quot;</span><span class="p">)</span>
+<span class="n">_pre_serializable_err_msg_10</span> <span class="o">=</span> \
+    <span class="p">(</span><span class="s2">&quot;An error occurred in trying to save the serialized representation to the &quot;</span>
+     <span class="s2">&quot;file at the path ``&#39;</span><span class="si">{}</span><span class="s2">&#39;``: see the traceback for details.&quot;</span><span class="p">)</span>
+<span class="n">_pre_serializable_err_msg_11</span> <span class="o">=</span> \
+    <span class="p">(</span><span class="s2">&quot;The object ``serialized_rep`` must be a valid JSON document.&quot;</span><span class="p">)</span>
+<span class="n">_pre_serializable_err_msg_12</span> <span class="o">=</span> \
+    <span class="p">(</span><span class="s2">&quot;The filename ``&#39;</span><span class="si">{}</span><span class="s2">&#39;`` is invalid: see the traceback for details.&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -722,7 +863,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2022, Matthew Fitzpatrick.
-      <span class="lastupdated">Last updated on Apr 18, 2022.
+      <span class="lastupdated">Last updated on Dec 19, 2022.
       </span></p>
   </div>
 

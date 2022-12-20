@@ -17,6 +17,10 @@ fancytypes.PreSerializableAndUpdatable
       :nosignatures:
    
       ~PreSerializableAndUpdatable.de_pre_serialize
+      ~PreSerializableAndUpdatable.dump
+      ~PreSerializableAndUpdatable.dumps
+      ~PreSerializableAndUpdatable.load
+      ~PreSerializableAndUpdatable.loads
       ~PreSerializableAndUpdatable.pre_serialize
       ~PreSerializableAndUpdatable.update
    
