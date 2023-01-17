@@ -16,6 +16,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -59,9 +60,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">Module code</a> &raquo;</li>
-      <li>fancytypes</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fancytypes</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -111,7 +112,7 @@
 <span class="c1">############################</span>
 
 <span class="n">__author__</span>       <span class="o">=</span> <span class="s2">&quot;Matthew Fitzpatrick&quot;</span>
-<span class="n">__copyright__</span>    <span class="o">=</span> <span class="s2">&quot;Copyright 2022&quot;</span>
+<span class="n">__copyright__</span>    <span class="o">=</span> <span class="s2">&quot;Copyright 2023&quot;</span>
 <span class="n">__credits__</span>      <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Matthew Fitzpatrick&quot;</span><span class="p">]</span>
 <span class="n">__version__</span>      <span class="o">=</span> <span class="n">fancytypes</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">version</span>
 <span class="n">__full_version__</span> <span class="o">=</span> <span class="n">fancytypes</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">full_version</span>
@@ -144,7 +145,7 @@
 
 
 <div class="viewcode-block" id="show_config"><a class="viewcode-back" href="../_autosummary/fancytypes.show_config.html#fancytypes.show_config">[docs]</a><span class="k">def</span> <span class="nf">show_config</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Print information about the version of ``fancytypes`` and libraries it </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print information about the version of ``fancytypes`` and libraries it </span>
 <span class="sd">    uses.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -155,7 +156,7 @@
 
 
 <div class="viewcode-block" id="Checkable"><a class="viewcode-back" href="../_autosummary/fancytypes.Checkable.html#fancytypes.Checkable">[docs]</a><span class="k">class</span> <span class="nc">Checkable</span><span class="p">():</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with read-only core attributes that enforces validation upon</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with read-only core attributes that enforces validation upon</span>
 <span class="sd">    construction.</span>
 
 <span class="sd">    Parameters</span>
@@ -219,7 +220,7 @@
 
 
 <div class="viewcode-block" id="Updatable"><a class="viewcode-back" href="../_autosummary/fancytypes.Updatable.html#fancytypes.Updatable">[docs]</a><span class="k">class</span> <span class="nc">Updatable</span><span class="p">():</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with updatable core attributes that enforces validation upon</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with updatable core attributes that enforces validation upon</span>
 <span class="sd">    constructing or updating an instance of said type.</span>
 
 <span class="sd">    Parameters</span>
@@ -248,7 +249,7 @@
 
 
 <div class="viewcode-block" id="Updatable.update"><a class="viewcode-back" href="../_autosummary/fancytypes.Updatable.html#fancytypes.Updatable.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_attr_subset</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update a subset of the core attributes.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update a subset of the core attributes.</span>
 
 <span class="sd">        Upon updating the subset of core attributes, the validation and</span>
 <span class="sd">        conversion functions specified in the construction parameter</span>
@@ -302,7 +303,7 @@
 
 
 <div class="viewcode-block" id="PreSerializable"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable">[docs]</a><span class="k">class</span> <span class="nc">PreSerializable</span><span class="p">():</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type that is pre-serializable, that can be constructed from a </span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type that is pre-serializable, that can be constructed from a </span>
 <span class="sd">    serializable representation, and that enforces validation upon construction.</span>
 
 <span class="sd">    We define pre-serialization as the process of converting an object into a</span>
@@ -469,7 +470,7 @@
 
 <div class="viewcode-block" id="PreSerializable.de_pre_serialize"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.de_pre_serialize">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">de_pre_serialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">serializable_rep</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serializable representation.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serializable representation.</span>
 
 <span class="sd">        We define pre-serialization as the process of converting an object into</span>
 <span class="sd">        a form that can be subsequently serialized into a JSON format. We refer</span>
@@ -505,7 +506,7 @@
 
 
 <div class="viewcode-block" id="PreSerializable.pre_serialize"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.pre_serialize">[docs]</a>    <span class="k">def</span> <span class="nf">pre_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pre-serialize instance.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pre-serialize instance.</span>
 
 <span class="sd">        We define pre-serialization as the process of converting an object into</span>
 <span class="sd">        a form that can be subsequently serialized into a JSON format. We refer</span>
@@ -534,7 +535,7 @@
 
 
 <div class="viewcode-block" id="PreSerializable.dumps"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.dumps">[docs]</a>    <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -550,7 +551,7 @@
 
 
 <div class="viewcode-block" id="PreSerializable.dump"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance and save the result in a JSON file.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Serialize instance and save the result in a JSON file.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -593,7 +594,7 @@
 
 <div class="viewcode-block" id="PreSerializable.loads"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.loads">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">loads</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">serialized_rep</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation.</span>
 
 <span class="sd">        Users can generate serialized representations using the method</span>
 <span class="sd">        :meth:`fancytypes.PreSerializable.dumps`.</span>
@@ -629,7 +630,7 @@
 
 <div class="viewcode-block" id="PreSerializable.load"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializable.html#fancytypes.PreSerializable.load">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation that is </span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an instance from a serialized representation that is </span>
 <span class="sd">        stored in a JSON file.</span>
 
 <span class="sd">        Users can save serialized representations to JSON files using the method</span>
@@ -670,7 +671,7 @@
 
 
 <div class="viewcode-block" id="PreSerializableAndUpdatable"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializableAndUpdatable.html#fancytypes.PreSerializableAndUpdatable">[docs]</a><span class="k">class</span> <span class="nc">PreSerializableAndUpdatable</span><span class="p">(</span><span class="n">PreSerializable</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with updatable core attributes, that is pre-serializable, that </span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A type with updatable core attributes, that is pre-serializable, that </span>
 <span class="sd">    can be constructed from a serializable representation, and that enforces </span>
 <span class="sd">    validation upon construction.</span>
 
@@ -773,7 +774,7 @@
 
 
 <div class="viewcode-block" id="PreSerializableAndUpdatable.update"><a class="viewcode-back" href="../_autosummary/fancytypes.PreSerializableAndUpdatable.html#fancytypes.PreSerializableAndUpdatable.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_attr_subset</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update a subset of the core attributes.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update a subset of the core attributes.</span>
 
 <span class="sd">        Upon updating the subset of core attributes, the validation and</span>
 <span class="sd">        conversion functions specified in the private class attribute</span>
@@ -862,8 +863,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Matthew Fitzpatrick.
-      <span class="lastupdated">Last updated on Dec 19, 2022.
+    <p>&#169; Copyright 2023, Matthew Fitzpatrick.
+      <span class="lastupdated">Last updated on Jan 17, 2023.
       </span></p>
   </div>
 

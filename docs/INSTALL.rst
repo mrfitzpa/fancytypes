@@ -28,12 +28,12 @@ repository::
 
   pip install .[<selector>]
 
-where ``<selector>`` can be one of the following::
+where ``<selector>`` can be one of the following:
 
-  - ``doc``: to install the dependencies necessary for documentation generation;
-  - ``examples``: to install the dependencies necessary for running any example
-    notebooks;
-  - ``all``: to install all additional dependencies.
+* ``doc``: to install the dependencies necessary for documentation generation;
+* ``examples``: to install the dependencies necessary for running any example
+  notebooks;
+* ``all``: to install all additional dependencies.
     
 
 Note that you must include the period as well. This will install ``fancytypes``
