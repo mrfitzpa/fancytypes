@@ -35,7 +35,7 @@ from setuptools import setup, find_packages, Command
 ############################
 
 __author__     = "Matthew Fitzpatrick"
-__copyright__  = "Copyright 2021"
+__copyright__  = "Copyright 2023"
 __credits__    = ["Matthew Fitzpatrick"]
 __maintainer__ = "Matthew Fitzpatrick"
 __email__      = "mrfitzpa@uvic.ca"
@@ -133,7 +133,7 @@ def write__version_py(full_version,
                + "## Authorship information ##\n"
                + "############################\n\n"
                + "__author__     = \"Matthew Fitzpatrick\"\n"
-               + "__copyright__  = \"Copyright 2022\"\n"
+               + "__copyright__  = \"Copyright 2023\"\n"
                + "__credits__    = [\"Matthew Fitzpatrick\"]\n"
                + "__maintainer__ = \"Matthew Fitzpatrick\"\n"
                + "__email__      = \"mrfitzpa@uvic.ca\"\n"

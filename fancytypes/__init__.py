@@ -38,7 +38,7 @@ import fancytypes.version
 ############################
 
 __author__       = "Matthew Fitzpatrick"
-__copyright__    = "Copyright 2022"
+__copyright__    = "Copyright 2023"
 __credits__      = ["Matthew Fitzpatrick"]
 __version__      = fancytypes.version.version
 __full_version__ = fancytypes.version.full_version
