@@ -50,13 +50,13 @@ __all__ = ["version",
 
 
 # Hard-coded version for people without git. Current non-production version.
-version = '0.1.0'
+version = "0.1.0"
 
 # Whether this is a released version or modified.
 released = False
 
 # Short version.
-short_version = 'v' + version
+short_version = "v" + version
 
 
 
@@ -72,7 +72,7 @@ def _get_git_revision():
         Git revision hash of ``fancytypes``.
     """
     try:
-        parsed_cmd = ['git', 'rev-parse', 'HEAD']
+        parsed_cmd = ["git", "rev-parse", "HEAD"]
         cwd = os.path.dirname(os.path.abspath(__file__))
         stderr = subprocess.STDOUT
 
@@ -103,7 +103,7 @@ def _get_full_version():
     full_version = version
     
     if not released:
-        full_version += '.dev0+' + git_revision[:7]
+        full_version += ".dev0+" + git_revision[:7]
         
     return full_version
 
