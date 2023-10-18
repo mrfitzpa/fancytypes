@@ -52,7 +52,7 @@ MAJOR = 0
 MINOR = 1
 MICRO = 0
 RELEASED = False
-VERSION = '{0:d}.{1:d}.{2:d}'.format(MAJOR, MINOR, MICRO)
+VERSION = "{0:d}.{1:d}.{2:d}".format(MAJOR, MINOR, MICRO)
 
 
 
@@ -67,11 +67,11 @@ def get_git_revision():
     revision : `str`
         Git revision hash of ``fancytypes``.
     """
-    if not os.path.exists('.git'):
+    if not os.path.exists(".git"):
         revision = "unknown"
     else:
         try:
-            parsed_cmd = ['git', 'rev-parse', 'HEAD']
+            parsed_cmd = ["git", "rev-parse", "HEAD"]
             cwd = os.path.dirname(os.path.abspath(__file__))
             stderr = subprocess.STDOUT
 
@@ -102,7 +102,7 @@ def get_version_info():
     git_revision = get_git_revision()
     
     if not RELEASED:
-        full_version += '.dev0+' + git_revision[:7]
+        full_version += ".dev0+" + git_revision[:7]
     return full_version, git_revision
 
 
@@ -152,7 +152,7 @@ def write__version_py(full_version,
                              released=RELEASED,
                              git_revision=git_revision)
 
-    with open(filename, 'w') as file_obj:
+    with open(filename, "w") as file_obj:
         print(filename)
         file_obj.write(content)
 
@@ -173,7 +173,7 @@ def read_requirements_file(filename):
     requirements : array_like(`str`, ndim=1)
         Extracted set of library requirements.
     """
-    with open(filename, 'r') as file_obj:
+    with open(filename, "r") as file_obj:
         requirements = file_obj.readlines()
 
     requirements = [line.strip() for line in requirements if line.strip()]
@@ -193,9 +193,9 @@ def read_extra_requirements():
         Extracted set of extra library requirements.
     """
     extra_requirements = \
-        {'doc': read_requirements_file('requirements-doc.txt'),
-         'examples': read_requirements_file('requirements-examples.txt')}
-    extra_requirements['all'] = [requirement for requirement_subset
+        {"doc": read_requirements_file("requirements_doc.txt"),
+         "examples": read_requirements_file("requirements_examples.txt")}
+    extra_requirements["all"] = [requirement for requirement_subset
                                  in extra_requirements.values()
                                  for requirement in requirement_subset]
     
@@ -235,10 +235,10 @@ def gen_minimal_requirements():
 
     Returns
     -------
-    minimal_requirements : `array_like` ('str`, ndim=1)
+    minimal_requirements : `array_like` (`str`, ndim=1)
         The minimal list of required packages.
     """
-    pkg_names = read_requirements_file('requirements.txt')
+    pkg_names = read_requirements_file("requirements.txt")
     
     minimal_requirements = []
     for pkg_name in pkg_names:
@@ -295,7 +295,7 @@ def setup_package():
     full_version, git_revision = get_version_info()
     write__version_py(full_version, git_revision)
 
-    setup_requires = ['setuptools']
+    setup_requires = ["setuptools"]
     install_requires = gen_minimal_requirements()
     extras_require = read_extra_requirements()
 
@@ -313,7 +313,7 @@ def setup_package():
           setup_requires=setup_requires,
           install_requires=install_requires,
           extras_require=extras_require,
-          cmdclass={'clean': CleanCommand})
+          cmdclass={"clean": CleanCommand})
 
 
     

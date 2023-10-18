@@ -6,7 +6,7 @@
   <title>fancytypes &mdash; fancytypes  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/readthedocs-custom.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/readthedocs_custom.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -27,11 +27,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> fancytypes
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            fancytypes
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -60,7 +64,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
       <li class="breadcrumb-item active">fancytypes</li>
       <li class="wy-breadcrumbs-aside">
@@ -201,7 +205,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_core_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">ctor_param_name</span> <span class="ow">in</span> <span class="n">ctor_param_names</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">validation_and_conversion_funcs</span><span class="p">[</span><span class="n">ctor_param_name</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">validation_and_conversion_funcs</span><span class="p">[</span><span class="n">ctor_param_name</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_checkable_err_msg_2</span><span class="p">)</span>
             <span class="n">core_attr</span> <span class="o">=</span> \
                 <span class="n">validation_and_conversion_funcs</span><span class="p">[</span><span class="n">ctor_param_name</span><span class="p">](</span><span class="n">ctor_params</span><span class="p">)</span>
@@ -406,7 +410,7 @@
         <span class="k">if</span> <span class="n">core_attr_names</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_1</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">core_attr_name</span> <span class="ow">in</span> <span class="n">checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">pre_serialization_funcs</span><span class="p">[</span><span class="n">core_attr_name</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">pre_serialization_funcs</span><span class="p">[</span><span class="n">core_attr_name</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_2</span><span class="p">)</span>
 
         <span class="n">czekitout</span><span class="o">.</span><span class="n">check</span><span class="o">.</span><span class="n">if_dict_like</span><span class="p">(</span><span class="n">de_pre_serialization_funcs</span><span class="p">,</span>
@@ -416,7 +420,7 @@
         <span class="k">if</span> <span class="n">core_attr_names</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">checkable_obj</span><span class="o">.</span><span class="n">core_attrs</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_3</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">core_attr_name</span> <span class="ow">in</span> <span class="n">core_attr_names</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">de_pre_serialization_funcs</span><span class="p">[</span><span class="n">core_attr_name</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">de_pre_serialization_funcs</span><span class="p">[</span><span class="n">core_attr_name</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">_pre_serializable_err_msg_4</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_checkable_obj</span> <span class="o">=</span> <span class="n">checkable_obj</span>
@@ -864,7 +868,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2023, Matthew Fitzpatrick.
-      <span class="lastupdated">Last updated on Jan 17, 2023.
+      <span class="lastupdated">Last updated on Jul 27, 2023.
       </span></p>
   </div>
 

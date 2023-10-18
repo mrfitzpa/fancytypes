@@ -25,7 +25,7 @@
 
    .. autosummary::
       :toctree:
-      :template: custom-class-template.rst
+      :template: custom_class_template.rst
       :nosignatures:
    
       Checkable
@@ -43,7 +43,7 @@
 
 .. autosummary::
    :toctree:
-   :template: custom-module-template.rst
+   :template: custom_module_template.rst
    :recursive:
 
    version
