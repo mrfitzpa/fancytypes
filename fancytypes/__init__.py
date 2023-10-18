@@ -228,6 +228,12 @@ class Updatable():
 
 
 
+    @property
+    def _core_attrs(self):
+        return self._checkable_obj._core_attrs
+
+
+
 class PreSerializable():
     r"""A type that is pre-serializable, that can be constructed from a 
     serializable representation, and that enforces validation upon construction.
@@ -593,6 +599,12 @@ class PreSerializable():
     @property
     def core_attrs(self):
         return self._checkable_obj.core_attrs
+
+
+
+    @property
+    def _core_attrs(self):
+        return self._checkable_obj._core_attrs
 
 
 
