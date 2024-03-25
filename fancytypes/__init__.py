@@ -455,7 +455,7 @@ class PreSerializable():
 
         """
         data = dict()
-        for core_attr_name, core_attr in self.core_attrs.items():
+        for core_attr_name, core_attr in self._core_attrs.items():
             _pre_serialize = self._pre_serialization_funcs[core_attr_name]
             datasubset = _pre_serialize(core_attr)
             data[core_attr_name] = datasubset
