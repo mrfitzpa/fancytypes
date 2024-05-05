@@ -203,13 +203,13 @@ class Updatable():
 
         names_of_core_attrs_to_update = core_attr_subset.keys()
 
-        for core_attr_name in self._checkable_obj.core_attrs.keys():
+        for core_attr_name in self._checkable_obj._core_attrs.keys():
             if core_attr_name not in core_attr_subset:
                 core_attrs[core_attr_name] = \
-                    self._checkable_obj.core_attrs[core_attr_name]
+                    self._checkable_obj._core_attrs[core_attr_name]
 
         for core_attr_name in names_of_core_attrs_to_update:
-            if core_attr_name not in self._checkable_obj.core_attrs:
+            if core_attr_name not in self._checkable_obj._core_attrs:
                 del core_attrs[core_attr_name]
 
         validation_and_conversion_funcs = \
@@ -335,9 +335,9 @@ class PreSerializable():
         
         core_attr_names = sorted(list(pre_serialization_funcs.keys()))
         
-        if core_attr_names != sorted(list(checkable_obj.core_attrs.keys())):
+        if core_attr_names != sorted(list(checkable_obj._core_attrs.keys())):
             raise KeyError(_pre_serializable_err_msg_1)
-        for core_attr_name in checkable_obj.core_attrs:
+        for core_attr_name in checkable_obj._core_attrs:
             if not callable(pre_serialization_funcs[core_attr_name]):
                 raise TypeError(_pre_serializable_err_msg_2)
 
@@ -345,7 +345,7 @@ class PreSerializable():
                                      "de_pre_serialization_funcs")
         core_attr_names = sorted(list(de_pre_serialization_funcs.keys()))
         
-        if core_attr_names != sorted(list(checkable_obj.core_attrs.keys())):
+        if core_attr_names != sorted(list(checkable_obj._core_attrs.keys())):
             raise KeyError(_pre_serializable_err_msg_3)
         for core_attr_name in core_attr_names:
             if not callable(de_pre_serialization_funcs[core_attr_name]):
@@ -739,7 +739,7 @@ class PreSerializableAndUpdatable(PreSerializable):
         """
         self._updatable_obj.update(core_attr_subset)
         
-        ctor_params = self._updatable_obj.core_attrs
+        ctor_params = self._updatable_obj._core_attrs
         self._checkable_obj = Checkable(ctor_params,
                                         self._validation_and_conversion_funcs)
 
