@@ -295,7 +295,7 @@ def setup_package():
     full_version, git_revision = get_version_info()
     write__version_py(full_version, git_revision)
 
-    setup_requires = ["setuptools"]
+    setup_requires = []
     install_requires = gen_minimal_requirements()
     extras_require = read_extra_requirements()
 
