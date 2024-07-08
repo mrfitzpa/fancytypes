@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+# Copyright 2024 Matthew Fitzpatrick.
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
 """``fancytypes`` is a simple Python library that defines some classes with
 useful features, such as enforced validation, updatability, pre-serialization,
 and de-pre-serialization. These classes can be used to define more complicated
@@ -28,32 +41,8 @@ import czekitout.convert
 
 
 
-# Import child modules and packages of current package.
-import fancytypes.version
-
-
-
-############################
-## Authorship information ##
-############################
-
-__author__       = "Matthew Fitzpatrick"
-__copyright__    = "Copyright 2023"
-__credits__      = ["Matthew Fitzpatrick"]
-__version__      = fancytypes.version.version
-__full_version__ = fancytypes.version.full_version
-__maintainer__   = "Matthew Fitzpatrick"
-__email__        = "mrfitzpa@uvic.ca"
-__status__       = "Development"
-
-
-
-###################################
-## Useful background information ##
-###################################
-
-# See e.g. ``https://docs.python.org/3/reference/import.html#regular-packages``
-# for a brief discussion of ``__init__.py`` files.
+# Get version of current package.
+from fancytypes.version import __version__
 
 
 
@@ -62,28 +51,29 @@ __status__       = "Development"
 ##################################
 
 # List of public objects in package.
-__all__ = ["show_config",
-           "Checkable",
+__all__ = ["Checkable",
            "Updatable",
            "PreSerializable",
            "PreSerializableAndUpdatable"]
 
 
 
-def show_config():
-    """Print information about the version of ``fancytypes`` and libraries it 
-    uses.
+def _check_and_convert_skip_validation_and_conversion(params):
+    obj_name = "skip_validation_and_conversion"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
 
-    """
-    print(version.version_summary)
+    return skip_validation_and_conversion
 
-    return None
+
+
+_default_skip_validation_and_conversion = False
 
 
 
 class Checkable():
     r"""A type with read-only core attributes that enforces validation upon
-    construction.
+    construction if specified.
 
     Parameters
     ----------
@@ -94,19 +84,17 @@ class Checkable():
         parameter is set. During construction, each construction parameter is
         potentially converted, and then subsequently set to a so-called "core
         attribute".
-    validation_and_conversion_funcs : `dict`
-        A `dict` storing validation and conversion functions to be applied to
-        the construction parameters: for each `dict` key ``ctor_param_name`` in
-        ``ctor_params``, ``validation_and_conversion_funcs[ctor_param_name]``
-        yields the validation and conversion function to be applied to the
-        construction parameter object ``ctor_params[ctor_param_name]``. Note
-        that the `dict` keys of ``validation_and_conversion_funcs`` must match
-        those exactly of ``ctor_params``. Furthermore, for each `dict` key
-        ``ctor_param_name``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` should take
-        ``ctor_params`` as the only input argument and return the potentially
-        converted construction parameter with the name specified by
-        ``ctor_param_name``.
+    skip_validation_and_conversion : `bool`
+        If ``skip_validation_and_conversion`` is set to ``False``, then the
+        validation and conversion functions specified in
+        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
+        applied to the construction parameters ``ctor_params``.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        then the validation and conversion steps are skipped. This option is
+        desired primarily when the user wants to avoid potentially expensive
+        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        copies or conversions are made in this case.
     
     Attributes
     ----------
@@ -114,12 +102,49 @@ class Checkable():
         A `dict` representation of the core attributes: each `dict` key is a
         `str` representing the name of a core attribute, and the corresponding
         `dict` value is the object to which said core attribute is set.
+    validation_and_conversion_funcs : `dict`, read-only
+        A `dict` storing validation and conversion functions that are applied to
+        the construction parameters ``ctor_params``: for each `dict` key
+        ``ctor_param_name`` in ``ctor_attrs``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
+        validation and conversion function that is applied to the construction
+        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
+        keys of ``validation_and_conversion_funcs`` must match those exactly of
+        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` should take
+        ``ctor_params`` as the only input argument and return the potentially
+        converted construction parameter with the name specified by
+        ``ctor_param_name``.
 
     """
-    def __init__(self, ctor_params, validation_and_conversion_funcs):
-        czekitout.check.if_dict_like(ctor_params, "ctor_params")
-        czekitout.check.if_dict_like(validation_and_conversion_funcs,
-                                     "validation_and_conversion_funcs")
+    def __init__(self,
+                 ctor_params,
+                 skip_validation_and_conversion=\
+                 _default_skip_validation_and_conversion):
+        params = \
+            {"skip_validation_and_conversion": skip_validation_and_conversion}
+        skip_validation_and_conversion = \
+            _check_and_convert_skip_validation_and_conversion(params)
+
+        if (skip_validation_and_conversion == False):
+            self._check_ctor_params_and_set_core_attrs(ctor_params)
+        else:
+            self._core_attrs = ctor_params
+
+        return None
+
+
+
+    def _check_ctor_params_and_set_core_attrs(self, ctor_params):
+        kwargs = {"obj": self._validation_and_conversion_funcs,
+                  "obj_name": "_validation_and_conversion_funcs"}
+        czekitout.check.if_dict_like(**kwargs)
+
+        kwargs = {"obj": ctor_params, "obj_name": "ctor_params"}
+        czekitout.check.if_dict_like(**kwargs)
+
+        validation_and_conversion_funcs = \
+            self._validation_and_conversion_funcs
         
         ctor_param_names = sorted(list(validation_and_conversion_funcs.keys()))
         if ctor_param_names != sorted(list(ctor_params.keys())):
@@ -127,13 +152,14 @@ class Checkable():
 
         self._core_attrs = dict()
         for ctor_param_name in ctor_param_names:
-            if not callable(validation_and_conversion_funcs[ctor_param_name]):
+            validation_and_conversion_func = \
+                validation_and_conversion_funcs[ctor_param_name]
+            if not callable(validation_and_conversion_func):
                 raise TypeError(_checkable_err_msg_2)
             core_attr = \
-                validation_and_conversion_funcs[ctor_param_name](ctor_params)
-            self._core_attrs[ctor_param_name] = core_attr
-
-        self._validation_and_conversion_funcs = validation_and_conversion_funcs
+                validation_and_conversion_func(params=ctor_params)
+            self._core_attrs[ctor_param_name] = \
+                core_attr
 
         return None
 
@@ -141,19 +167,96 @@ class Checkable():
 
     @property
     def core_attrs(self):
-        return copy.deepcopy(self._core_attrs)
+        result = copy.deepcopy(self._core_attrs)
+        
+        return result
 
 
 
-class Updatable():
+    @property
+    def validation_and_conversion_funcs(self):
+        result = copy.deepcopy(self._validation_and_conversion_funcs)
+        
+        return result
+
+
+def _update_old_core_attr_set_and_return_new_core_attr_set(
+        skip_validation_and_conversion,
+        new_core_attr_subset,
+        old_core_attr_set,
+        validation_and_conversion_funcs):
+    params = \
+        {"skip_validation_and_conversion": skip_validation_and_conversion}
+    skip_validation_and_conversion = \
+        _check_and_convert_skip_validation_and_conversion(params)
+
+    kwargs = {"obj": new_core_attr_subset, "obj_name": "core_attr_subset"}
+    czekitout.check.if_dict_like(**kwargs)
+    
+    new_core_attr_set = new_core_attr_subset.copy()
+
+    for core_attr_name in old_core_attr_set.keys():
+        if core_attr_name not in new_core_attr_subset:
+            new_core_attr = old_core_attr_set[core_attr_name]
+            new_core_attr_set[core_attr_name] = new_core_attr
+
+    names_of_core_attrs_to_update = tuple()
+    for core_attr_name in new_core_attr_subset.keys():
+        if core_attr_name not in old_core_attr_set:
+            del new_core_attr_set[core_attr_name]
+        else:
+            names_of_core_attrs_to_update += (core_attr_name,)
+
+    for ctor_param_name in names_of_core_attrs_to_update:
+        validation_and_conversion_func = \
+            self._validation_and_conversion_funcs[ctor_param_name]
+
+        if (skip_validation_and_conversion == False):
+            kwargs = {"params": new_core_attr_set}
+            new_core_attr = validation_and_conversion_func(**kwargs)
+            new_core_attr_set[ctor_param_name] = new_core_attr
+
+    return new_core_attr_set
+
+
+
+def _check_and_convert_deep_copy(params):
+    obj_name = "deep_copy"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    deep_copy = czekitout.convert.to_bool(**kwargs)
+
+    return deep_copy
+
+
+
+_default_deep_copy = True
+
+
+
+class Updatable(Checkable):
     r"""A type with updatable core attributes that enforces validation upon
     constructing or updating an instance of said type.
 
     Parameters
     ----------
-    checkable_obj : :class:`fancytypes.Checkable`
-        A "checkable" object, which stores the updatable core attributes and
-        enforces validation.
+    ctor_params : `dict`
+        A `dict` representation of the construction parameters: each `dict` key
+        is a `str` representing the name of a construction parameter, and the
+        corresponding `dict` value is the object to which said construction
+        parameter is set. During construction, each construction parameter is
+        potentially converted, and then subsequently set to a so-called "core
+        attribute".
+    skip_validation_and_conversion : `bool`
+        If ``skip_validation_and_conversion`` is set to ``False``, then the
+        validation and conversion functions specified in
+        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
+        applied to the construction parameters ``ctor_params``.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        then the validation and conversion steps are skipped. This option is
+        desired primarily when the user wants to avoid potentially expensive
+        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        copies or conversions are made in this case.
 
     Attributes
     ----------
@@ -162,27 +265,37 @@ class Updatable():
         `str` representing the name of a core attribute, and the corresponding
         `dict` value is the object to which said core attribute is set. Note
         that it is only the core attributes which can be updated directly.
+    validation_and_conversion_funcs : `dict`, read-only
+        A `dict` storing validation and conversion functions that are applied to
+        the construction parameters ``ctor_params`` and to any of the core
+        attributes that are to be updated: for each `dict` key
+        ``ctor_param_name`` in ``ctor_attrs``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
+        validation and conversion function that is applied to the construction
+        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
+        keys of ``validation_and_conversion_funcs`` must match those exactly of
+        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` should take
+        ``ctor_params`` or ``core_attrs`` as the only input argument and return
+        the potentially converted construction parameter or core attribute with
+        the name specified by ``ctor_param_name``.
+
     """
-    def __init__(self, checkable_obj):
-        kwargs = {"obj": checkable_obj,
-                  "obj_name": "checkable_obj",
-                  "accepted_types": (Checkable,)}
-        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
-        self._checkable_obj = checkable_obj
+    def __init__(self,
+                 ctor_params,
+                 skip_validation_and_conversion=\
+                 _default_skip_validation_and_conversion):
+        Checkable.__init__(self, ctor_params, skip_validation_and_conversion)
 
         return None
 
 
 
-    def update(self, core_attr_subset):
+    def update(self,
+               core_attr_subset,
+               skip_validation_and_conversion=\
+               _default_skip_validation_and_conversion):
         r"""Update a subset of the core attributes.
-
-        Upon updating the subset of core attributes, the validation and
-        conversion functions specified in the construction parameter
-        ``checkable_obj`` are applied. See the documentation for the class
-        :class:`fancytypes.Checkable`, namely the description of the
-        construction parameter ``validation_and_conversion_funcs`` of that
-        class, for a discussion on the validation and conversion functions.
 
         Parameters
         ----------
@@ -196,45 +309,78 @@ class Updatable():
             are not keys of the instance attribute
             :attr:`fancytypes.Updatable.core_attrs` are ignored in the update
             procedure along with the corresponding `dict` values.
+        skip_validation_and_conversion : `bool`
+            If ``skip_validation_and_conversion`` is set to ``False``, then a
+            upon updating the subset of core attributes, the corresponding
+            validation and conversion functions specified in
+            :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
+            applied. 
+
+            Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+            then the validation and conversion steps are skipped. This option is
+            desired primarily when the user wants to avoid potentially expensive
+            copies and/or conversions of the `dict` values of
+            ``core_attr_subset``, as no copies or conversions are made in this
+            case.
 
         """
-        czekitout.check.if_dict_like(core_attr_subset, "core_attr_subset")
-        core_attrs = core_attr_subset.copy()
-
-        names_of_core_attrs_to_update = core_attr_subset.keys()
-
-        for core_attr_name in self._checkable_obj._core_attrs.keys():
-            if core_attr_name not in core_attr_subset:
-                core_attrs[core_attr_name] = \
-                    self._checkable_obj._core_attrs[core_attr_name]
-
-        for core_attr_name in names_of_core_attrs_to_update:
-            if core_attr_name not in self._checkable_obj._core_attrs:
-                del core_attrs[core_attr_name]
-
-        validation_and_conversion_funcs = \
-            self._checkable_obj._validation_and_conversion_funcs
-
-        self._checkable_obj = Checkable(core_attrs,
-                                        validation_and_conversion_funcs)
+        kwargs = \
+            {"skip_validation_and_conversion": \
+             skip_validation_and_conversion,
+             "new_core_attr_subset": \
+             core_attr_subset,
+             "old_core_attr_set": \
+             self._core_attrs,
+             "validation_and_conversion_funcs": \
+             self._validation_and_conversion_funcs}
+        self._core_attrs = \
+            _update_old_core_attr_set_and_return_new_core_attr_set(**kwargs)
 
         return None
 
 
 
-    @property
-    def core_attrs(self):
-        return self._checkable_obj.core_attrs
+    def get_core_attrs(self, deep_copy=_default_deep_copy):
+        r"""Return the core attributes.
+
+        Parameters
+        ----------
+        deep_copy : `bool`
+            If ``deep_copy`` is set to ``True``, then a deep copy of the 
+            original `dict` representation of the core attributes are returned. 
+            Otherwise, a reference to the `dict` representation is returned.
+
+        Returns
+        -------
+        core_attrs : `dict`
+            A `dict` representation of the core attributes: each `dict` key is a
+            `str` representing the name of a core attribute, and the 
+            corresponding `dict` value is the object to which said core 
+            attribute is set.
+
+        """
+        core_attrs = (self.core_attrs
+                      if (deep_copy == True)
+                      else self._core_attrs)
+
+        return core_attrs
 
 
 
-    @property
-    def _core_attrs(self):
-        return self._checkable_obj._core_attrs
+def _check_and_convert_overwrite(params):
+    obj_name = "overwrite"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    overwrite = czekitout.convert.to_bool(**kwargs)
+
+    return overwrite
 
 
 
-class PreSerializable():
+_default_overwrite = False
+
+
+
+class PreSerializable(Checkable):
     r"""A type that is pre-serializable, that can be constructed from a 
     serializable representation, and that enforces validation upon construction.
 
@@ -307,6 +453,17 @@ class PreSerializable():
         parameter is set. During construction, each construction parameter is
         potentially converted, and then subsequently set to a so-called "core
         attribute".
+    skip_validation_and_conversion : `bool`
+        If ``skip_validation_and_conversion`` is set to ``False``, then the
+        validation and conversion functions specified in
+        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
+        applied to the construction parameters ``ctor_params``.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        then the validation and conversion steps are skipped. This option is
+        desired primarily when the user wants to avoid potentially expensive
+        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        copies or conversions are made in this case.
 
     Attributes
     ----------
@@ -321,51 +478,96 @@ class PreSerializable():
         well-behaved, it must satisfy ``instance.core_attrs ==
         cls(**instance.core_attrs).core_attrs``, where ``instance`` is any
         instance of ``cls`` that was constructed without error.
+    validation_and_conversion_funcs : `dict`, read-only
+        A `dict` storing validation and conversion functions that are applied to
+        the construction parameters ``ctor_params``: for each `dict` key
+        ``ctor_param_name`` in ``ctor_attrs``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
+        validation and conversion function that is applied to the construction
+        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
+        keys of ``validation_and_conversion_funcs`` must match those exactly of
+        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` should take
+        ``ctor_params`` as the only input argument and return the potentially
+        converted construction parameter with the name specified by
+        ``ctor_param_name``.
+    pre_serialization_funcs : `dict`, read-only
+        A `dict` storing pre-serialization functions that are applied to the
+        core attributes ``core_attrs``: for each `dict` key ``core_attr_name``
+        in ``core_attrs``, ``pre_serialization_funcs[core_attr_name]`` yields
+        the pre-serialization function that is applied to the core attribute
+        ``core_attrs[core_attr_name]``, upon calling the method
+        :meth:`fancytypes.PreSerializable.pre_serialize`. Note that the `dict`
+        keys of ``pre_serialization_funcs`` must match those exactly of
+        ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
+        ``pre_serialization_funcs[core_attr_name]`` should take ``core_attrs``
+        as the only input argument and return the serializable representation of
+        the core attribute with the name specified by ``core_attr_name``.
+    de_pre_serialization_funcs : `dict`, read-only
+        A `dict` storing de-pre-serialization functions that are applied to
+        serializable representations of the core attributes ``core_attrs``: for
+        each `dict` key ``core_attr_name`` in ``core_attrs``,
+        ``de_pre_serialization_funcs[core_attr_name]`` yields the
+        de-pre-serialization function that is applied to the serializable
+        representation of the core attribute ``core_attrs[core_attr_name]``,
+        upon calling the method
+        :meth:`fancytypes.PreSerializable.de_pre_serialize`. Note that the
+        `dict` keys of ``de_pre_serialization_funcs`` must match those exactly
+        of ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
+        ``de_pre_serialization_funcs[core_attr_name]`` should take the
+        serializable representation of the core attribute with the name
+        specified by ``core_attr_name`` as the only input argument and return
+        the de-serialized form of said core attribute.
 
     """
-    def __init__(self, ctor_params):
+    def __init__(self,
+                 ctor_params,
+                 skip_validation_and_conversion=\
+                 _default_skip_validation_and_conversion):
+        Checkable.__init__(self, ctor_params, skip_validation_and_conversion)
+
+        kwargs = {"obj": self._pre_serialization_funcs,
+                  "obj_name": "_pre_serialization_funcs"}
+        czekitout.check.if_dict_like(**kwargs)
+
+        kwargs = {"obj": self._de_pre_serialization_funcs,
+                  "obj_name": "_de_pre_serialization_funcs"}
+        czekitout.check.if_dict_like(**kwargs)
+
         validation_and_conversion_funcs = self._validation_and_conversion_funcs
         pre_serialization_funcs = self._pre_serialization_funcs
         de_pre_serialization_funcs = self._de_pre_serialization_funcs
-
-        checkable_obj = Checkable(ctor_params, validation_and_conversion_funcs)
-
-        czekitout.check.if_dict_like(pre_serialization_funcs,
-                                     "pre_serialization_funcs")
         
         core_attr_names = sorted(list(pre_serialization_funcs.keys()))
         
-        if core_attr_names != sorted(list(checkable_obj._core_attrs.keys())):
+        if core_attr_names != sorted(list(self._core_attrs.keys())):
             raise KeyError(_pre_serializable_err_msg_1)
-        for core_attr_name in checkable_obj._core_attrs:
+        for core_attr_name in self._core_attrs:
             if not callable(pre_serialization_funcs[core_attr_name]):
                 raise TypeError(_pre_serializable_err_msg_2)
 
-        czekitout.check.if_dict_like(de_pre_serialization_funcs,
-                                     "de_pre_serialization_funcs")
         core_attr_names = sorted(list(de_pre_serialization_funcs.keys()))
         
-        if core_attr_names != sorted(list(checkable_obj._core_attrs.keys())):
+        if core_attr_names != sorted(list(self._core_attrs.keys())):
             raise KeyError(_pre_serializable_err_msg_3)
         for core_attr_name in core_attr_names:
             if not callable(de_pre_serialization_funcs[core_attr_name]):
                 raise TypeError(_pre_serializable_err_msg_4)
+
+        if (skip_validation_and_conversion == False):
+            try:
+                serializable_rep = self.pre_serialize()
+            except:
+                raise ValueError(_pre_serializable_err_msg_5)
         
-        self._checkable_obj = checkable_obj
-
-        try:
-            serializable_rep = self.pre_serialize()
-        except:
-            raise ValueError(_pre_serializable_err_msg_5)
-
-        try:
-            construct_ctor_params_from_serializable_rep = \
-                self._construct_ctor_params_from_serializable_rep
-            ctor_params = \
-                construct_ctor_params_from_serializable_rep(serializable_rep)
-            Checkable(ctor_params, validation_and_conversion_funcs)
-        except:
-            raise ValueError(_pre_serializable_err_msg_6)
+            try:
+                construct_ctor_params = \
+                    self._construct_ctor_params_from_serializable_rep
+                
+                ctor_params = construct_ctor_params(serializable_rep)
+                self._check_ctor_params_and_set_core_attrs(ctor_params)
+            except:
+                raise ValueError(_pre_serializable_err_msg_6)
         
         return None
 
@@ -391,7 +593,8 @@ class PreSerializable():
             for ctor_param_name in ctor_param_names:
                 datasubset = data[ctor_param_name]
                 de_pre_serialize = de_pre_serialization_funcs[ctor_param_name]
-                ctor_params[ctor_param_name] = de_pre_serialize(datasubset)
+                ctor_param = copy.deepcopy(de_pre_serialize(datasubset))
+                ctor_params[ctor_param_name] = ctor_param
         except:
             err_msg = _pre_serializable_err_msg_8.format(ctor_param_name)
             raise ValueError(err_msg)
@@ -457,7 +660,7 @@ class PreSerializable():
         data = dict()
         for core_attr_name, core_attr in self._core_attrs.items():
             _pre_serialize = self._pre_serialization_funcs[core_attr_name]
-            datasubset = _pre_serialize(core_attr)
+            datasubset = copy.deepcopy(_pre_serialize(core_attr))
             data[core_attr_name] = datasubset
 
         serializable_rep = data
@@ -482,7 +685,7 @@ class PreSerializable():
 
 
 
-    def dump(self, filename, overwrite=False):
+    def dump(self, filename, overwrite=_default_overwrite):
         r"""Serialize instance and save the result in a JSON file.
 
         Parameters
@@ -597,14 +800,18 @@ class PreSerializable():
 
 
     @property
-    def core_attrs(self):
-        return self._checkable_obj.core_attrs
+    def pre_serialization_funcs(self):
+        result = copy.deepcopy(self._pre_serialization_funcs)
+        
+        return result
 
 
 
     @property
-    def _core_attrs(self):
-        return self._checkable_obj._core_attrs
+    def de_pre_serialization_funcs(self):
+        result = copy.deepcopy(self._de_pre_serialization_funcs)
+        
+        return result
 
 
 
@@ -686,6 +893,17 @@ class PreSerializableAndUpdatable(PreSerializable):
         parameter is set. During construction, each construction parameter is
         potentially converted, and then subsequently set to a so-called "core
         attribute".
+    skip_validation_and_conversion : `bool`
+        If ``skip_validation_and_conversion`` is set to ``False``, then the
+        validation and conversion functions specified in
+        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
+        applied to the construction parameters ``ctor_params``.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        then the validation and conversion steps are skipped. This option is
+        desired primarily when the user wants to avoid potentially expensive
+        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        copies or conversions are made in this case.
 
     Attributes
     ----------
@@ -700,26 +918,66 @@ class PreSerializableAndUpdatable(PreSerializable):
         well-behaved, it must satisfy ``instance.core_attrs ==
         cls(**instance.core_attrs).core_attrs``, where ``instance`` is any
         instance of ``cls`` that was constructed without error.
+    validation_and_conversion_funcs : `dict`, read-only
+        A `dict` storing validation and conversion functions that are applied to
+        the construction parameters ``ctor_params`` and to any of the core
+        attributes that are to be updated: for each `dict` key
+        ``ctor_param_name`` in ``ctor_attrs``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
+        validation and conversion function that is applied to the construction
+        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
+        keys of ``validation_and_conversion_funcs`` must match those exactly of
+        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
+        ``validation_and_conversion_funcs[ctor_param_name]`` should take
+        ``ctor_params`` or ``core_attrs`` as the only input argument and return
+        the potentially converted construction parameter or core attribute with
+        the name specified by ``ctor_param_name``.
+    pre_serialization_funcs : `dict`, read-only
+        A `dict` storing pre-serialization functions that are applied to the
+        core attributes ``core_attrs``: for each `dict` key ``core_attr_name``
+        in ``core_attrs``, ``pre_serialization_funcs[core_attr_name]`` yields
+        the pre-serialization function that is applied to the core attribute
+        ``core_attrs[core_attr_name]``, upon calling the method
+        :meth:`fancytypes.PreSerializable.pre_serialize`. Note that the `dict`
+        keys of ``pre_serialization_funcs`` must match those exactly of
+        ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
+        ``pre_serialization_funcs[core_attr_name]`` should take ``core_attrs``
+        as the only input argument and return the serializable representation of
+        the core attribute with the name specified by ``core_attr_name``.
+    de_pre_serialization_funcs : `dict`, read-only
+        A `dict` storing de-pre-serialization functions that are applied to
+        serializable representations of the core attributes ``core_attrs``: for
+        each `dict` key ``core_attr_name`` in ``core_attrs``,
+        ``de_pre_serialization_funcs[core_attr_name]`` yields the
+        de-pre-serialization function that is applied to the serializable
+        representation of the core attribute ``core_attrs[core_attr_name]``,
+        upon calling the method
+        :meth:`fancytypes.PreSerializable.de_pre_serialize`. Note that the
+        `dict` keys of ``de_pre_serialization_funcs`` must match those exactly
+        of ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
+        ``de_pre_serialization_funcs[core_attr_name]`` should take the
+        serializable representation of the core attribute with the name
+        specified by ``core_attr_name`` as the only input argument and return
+        the de-serialized form of said core attribute.
 
     """
-    def __init__(self, ctor_params):
-        PreSerializable.__init__(self, ctor_params)
-        
-        self._updatable_obj = Updatable(self._checkable_obj)
+    def __init__(self,
+                 ctor_params,
+                 skip_validation_and_conversion=\
+                 _default_skip_validation_and_conversion):
+        PreSerializable.__init__(self,
+                                 ctor_params,
+                                 skip_validation_and_conversion)
         
         return None
 
 
 
-    def update(self, core_attr_subset):
+    def update(self,
+               core_attr_subset,
+               skip_validation_and_conversion=\
+               _default_skip_validation_and_conversion):
         r"""Update a subset of the core attributes.
-
-        Upon updating the subset of core attributes, the validation and
-        conversion functions specified in the private class attribute
-        ``_validation_and_conversion_funcs`` are applied. See the preamble of
-        the documentation for the class
-        :class:`fancytypes.PreSerializableAndUpdatable` for a discussion on the
-        validation and conversion functions.
 
         Parameters
         ----------
@@ -735,15 +993,61 @@ class PreSerializableAndUpdatable(PreSerializable):
             :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` are
             ignored in the update procedure along with the corresponding `dict`
             values.
+        skip_validation_and_conversion : `bool`
+            If ``skip_validation_and_conversion`` is set to ``False``, then a
+            upon updating the subset of core attributes, the corresponding
+            validation and conversion functions specified in
+            :attr:`fancytypes.PreSerializableAndUpdatable.validation_and_conversion_funcs`
+            are applied.
+
+            Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+            then the validation and conversion steps are skipped. This option is
+            desired primarily when the user wants to avoid potentially expensive
+            copies and/or conversions of the `dict` values of
+            ``core_attr_subset``, as no copies or conversions are made in this
+            case.
 
         """
-        self._updatable_obj.update(core_attr_subset)
-        
-        ctor_params = self._updatable_obj._core_attrs
-        self._checkable_obj = Checkable(ctor_params,
-                                        self._validation_and_conversion_funcs)
+        kwargs = \
+            {"skip_validation_and_conversion": \
+             skip_validation_and_conversion,
+             "new_core_attr_subset": \
+             core_attr_subset,
+             "old_core_attr_set": \
+             self._core_attrs,
+             "validation_and_conversion_funcs": \
+             self._validation_and_conversion_funcs}
+        self._core_attrs = \
+            _update_old_core_attr_set_and_return_new_core_attr_set(**kwargs)
 
         return None
+
+
+
+    def get_core_attrs(self, deep_copy=_default_deep_copy):
+        r"""Return the core attributes.
+
+        Parameters
+        ----------
+        deep_copy : `bool`
+            If ``deep_copy`` is set to ``True``, then a deep copy of the 
+            original `dict` representation of the core attributes are returned. 
+            Otherwise, a reference to the `dict` representation is returned.
+
+        Returns
+        -------
+        core_attrs : `dict`
+            A `dict` representation of the core attributes: each `dict` key is a
+            `str` representing the name of a core attribute, and the 
+            corresponding `dict` value is the object to which said core 
+            attribute is set.
+
+        """
+        core_attrs = (self.core_attrs
+                      if (deep_copy == True)
+                      else self._core_attrs)
+
+        return core_attrs
 
 
 

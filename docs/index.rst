@@ -11,10 +11,6 @@ Setting up fancytypes
 For instructions on installing the ``fancytypes`` library, see the
 :ref:`installation_instructions_sec` page.
 
-.. Note for those reading the raw .rst file: see file 'docs/INSTALL.rst' for
-   instructions on installing the fancytypes library as well as instructions for
-   compiling the documentation of this library.
-
 Learning how to use fancytypes
 ------------------------------
 
@@ -24,9 +20,6 @@ one can use the ``fancytypes`` library. While going through the examples,
 readers can consult the :ref:`reference_guide_sec` to understand what each line
 of code is doing.
 
-.. Note for those reading the raw .rst file: see directory 'examples' for the
-   aforementioned code examples.
-   
 Contents
 --------
 .. toctree::
@@ -37,8 +30,6 @@ Contents
    INSTALL
    Reference <_autosummary/fancytypes>
    examples
-   todo
-   changelog
    license
 
 Indices and tables
