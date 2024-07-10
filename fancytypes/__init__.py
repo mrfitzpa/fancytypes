@@ -84,11 +84,14 @@ def _check_and_convert_skip_validation_and_conversion(params):
 
 
 def _check_and_convert_params_to_be_mapped_to_core_attrs(params):
+    params["core_attrs_candidate"] = \
+        params["params_to_be_mapped_to_core_attrs"]
     params["name_of_obj_alias_of_core_attrs_candidate"] = \
         "params_to_be_mapped_to_core_attrs"
     params_to_be_mapped_to_core_attrs = \
         _check_and_convert_core_attrs_candidate(params)
 
+    del params["core_attrs_candidate"]
     del params["name_of_obj_alias_of_core_attrs_candidate"]
 
     return params_to_be_mapped_to_core_attrs
@@ -101,7 +104,7 @@ def _check_and_convert_core_attrs_candidate(params):
     obj_name = \
         params["name_of_obj_alias_of_core_attrs_candidate"]
     kwargs = \
-        {"obj": params[obj_name], "obj_name": obj_name}
+        {"obj": params["core_attrs_candidate"], "obj_name": obj_name}
     core_attrs_candidate = \
         czekitout.convert.to_dict(**kwargs).copy()
 
@@ -236,10 +239,8 @@ def _update_old_core_attr_set_and_return_new_core_attr_set(
 
     for core_attr_name in old_core_attr_set.keys():
         if core_attr_name not in new_core_attr_subset_candidate:
-            new_core_attr_candidate = \
-                old_core_attr_set[core_attr_name]
-            new_core_attr_subset_candidate[core_attr_name] = \
-                new_core_attr_candidate
+            new_core_attr_candidate = old_core_attr_set[core_attr_name]
+            new_core_attr_set[core_attr_name] = new_core_attr_candidate
 
     names_of_core_attrs_to_update = tuple()
     for core_attr_name in new_core_attr_subset_candidate:
@@ -721,7 +722,11 @@ class PreSerializable(Checkable):
             ``serializable_rep``.
 
         """
-        _preliminary_check_of_de_pre_serialization_funcs(params=ctor_params)
+        params = {key: val
+                  for key, val in locals().items()
+                  if (key not in ("self", "__class__"))}
+
+        _preliminary_check_of_de_pre_serialization_funcs(params)
         de_pre_serialization_funcs = dict(de_pre_serialization_funcs)
 
         try:
@@ -729,7 +734,7 @@ class PreSerializable(Checkable):
                 {"serializable_rep": serializable_rep,
                  "de_pre_serialization_funcs": de_pre_serialization_funcs}
             core_attrs_candidate = \
-                self._construct_core_attrs_candidate(**kwargs)
+                cls._construct_core_attrs_candidate(**kwargs)
 
             kwargs = {"validation_and_conversion_funcs": \
                       validation_and_conversion_funcs,
@@ -755,7 +760,7 @@ class PreSerializable(Checkable):
                           "pre_serializable_obj._core_attrs",
                           "validation_and_conversion_funcs": \
                           validation_and_conversion_funcs}
-                core_attrs =_check_and_convert_core_attrs_candidate(params)
+                core_attrs = _check_and_convert_core_attrs_candidate(params)
                 pre_serializable_obj._core_attrs = core_attrs
         except:
             raise ValueError(_pre_serializable_err_msg_5)
@@ -930,7 +935,7 @@ class PreSerializable(Checkable):
         try:
             serializable_rep = json.loads(serialized_rep)
         except:
-            raise json.decoder.JSONDecodeError(_pre_serializable_err_msg_8)
+            raise ValueError(_pre_serializable_err_msg_8)
 
         kwargs = {"validation_and_conversion_funcs": \
                   validation_and_conversion_funcs,

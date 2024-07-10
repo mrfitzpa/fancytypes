@@ -1,7 +1,7 @@
 # fancytypes
 
 [![Test library](https://github.com/mrfitzpa/fancytypes/actions/workflows/test_library.yml/badge.svg)](https://github.com/mrfitzpa/fancytypes/actions/workflows/test_library.yml)
-[![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mrfitzpa/<INSERT ID HERE>/raw/fancytypes_coverage_badge.json)](https://github.com/mrfitzpa/fancytypes/actions/workflows/measure_code_coverage.yml)
+[![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mrfitzpa/0ff284bfee8b5519e6f1bafa849007bb/raw/fancytypes_coverage_badge.json)](https://github.com/mrfitzpa/fancytypes/actions/workflows/measure_code_coverage.yml)
 [![Documentation](https://img.shields.io/badge/docs-read-brightgreen)](https://mrfitzpa.github.io/fancytypes)
 [![PyPi Version](https://img.shields.io/pypi/v/fancytypes.svg)](https://pypi.org/project/fancytypes)
 [![Conda-Forge Version](https://img.shields.io/conda/vn/conda-forge/fancytypes.svg)](https://anaconda.org/conda-forge/fancytypes)
