@@ -27,6 +27,15 @@ import copy
 # For operations related to unit tests.
 import pytest
 
+# For removing files.
+import pathlib
+
+
+
+# For validating and converting objects.
+import czekitout.check
+import czekitout.convert
+
 
 
 # For defining classes that support enforced validation, updatability,
@@ -41,35 +50,28 @@ import fancytypes
 
 
 
-def _check_and_convert_slice_obj(params):
-    slice_obj = copy.deepcopy(params["slice_obj"])
-    if not isinstance(slice_obj, slice):
-        err_msg = ("The object ``slice_obj`` must be of type `slice`.")
-        raise TypeError(err_msg)
+def check_and_convert_slice_obj(params):
+    obj_name = "slice_obj"
+    kwargs = {"obj": params[obj_name],
+              "obj_name": obj_name,
+              "accepted_types": (slice,)}
+    czekitout.check.if_instance_of_any_accepted_types(**kwargs)
+    slice_obj = copy.deepcopy(params[obj_name])
 
     return slice_obj
 
 
 
-def _check_and_convert_seed(params):
-    seed = params["seed"]
-    
-    if seed is not None:
-        try:
-            seed = float(seed)
-            if seed.is_integer():
-                seed = int(seed)
-            else:
-                raise TypeError
-        except:
-            err_msg = ("The object ``seed`` must be an integer or `NoneType`.")
-            raise TypeError(err_msg)
-            
+def check_and_convert_seed(params):
+    obj_name = "seed"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    seed = czekitout.convert.to_nonnegative_int(**kwargs)
+
     return seed
 
 
 
-def _pre_serialize_slice_obj(slice_obj):
+def pre_serialize_slice_obj(slice_obj):
     serializable_rep = {"start": slice_obj.start, 
                         "stop": slice_obj.stop, 
                         "step": slice_obj.step}
@@ -78,7 +80,7 @@ def _pre_serialize_slice_obj(slice_obj):
 
 
 
-def _pre_serialize_seed(seed):
+def pre_serialize_seed(seed):
     serializable_rep = seed
     
     return serializable_rep
@@ -86,7 +88,7 @@ def _pre_serialize_seed(seed):
 
 
 
-def _de_pre_serialize_slice_obj(serializable_rep):
+def de_pre_serialize_slice_obj(serializable_rep):
     slice_obj = slice(serializable_rep["start"], 
                       serializable_rep["stop"], 
                       serializable_rep["step"])
@@ -95,259 +97,150 @@ def _de_pre_serialize_slice_obj(serializable_rep):
 
 
 
-def _de_pre_serialize_seed(serializable_rep):
+def de_pre_serialize_seed(serializable_rep):
     seed = serializable_rep
     
     return seed
 
 
 
-class SliceShufflerVersion1(fancytypes.PreSerializableAndUpdatable):
-    _validation_and_conversion_funcs = \
-        {"slice_obj": _check_and_convert_slice_obj, 
-         "seed": _check_and_convert_seed}
-    
-    _pre_serialization_funcs = \
-        {"slice_obj": _pre_serialize_slice_obj, 
-         "seed": _pre_serialize_seed}
-    
-    _de_pre_serialization_funcs = \
-        {"slice_obj": _de_pre_serialize_slice_obj, 
-         "seed": _de_pre_serialize_seed}
-    
-    def __init__(self, slice_obj, seed):
-        ctor_params = {"slice_obj": slice_obj, "seed": seed}
-        fancytypes.PreSerializableAndUpdatable.__init__(self, ctor_params)
-
-        return None
-
-
-
-    def _post_base_update(self):
-        core_attrs = self.get_core_attrs(deep_copy=False)
-        seed = core_attrs["seed"]
-        self._random_generator = np.random.default_rng(seed)
-
-        return None
-
-
-
-    def update(self, core_attr_subset, skip_validation_and_conversion):
-        super().update(core_attr_subset, skip_validation_and_conversion)
-        self._post_base_update()
-
-        return None
-
-
-
-    def shuffle(self, array):
-        array = np.array(array)
-            
-        slice_obj = self.core_attrs["slice_obj"]
-        array_slice = array[slice_obj]
-        self._random_generator.shuffle(array_slice)
-        array[slice_obj] = array_slice
-
-        return array
-
-
-
 def test_1_of_PreSerializableAndUpdatable():
     slice_obj_1 = slice(None, 6, 1)
     slice_obj_2 = slice(3, None, 1)
-    
-    seed_1 = 5.0
-    seed_2 = 1.0
 
-    kwargs = ("slice_obj": slice_obj_1, "seed": seed_1}
-    slice_shuffler = SliceShufflerVersion1(**kwargs)
+    validation_and_conversion_funcs = {"slice_obj": check_and_convert_slice_obj,
+                                       "seed": check_and_convert_seed}
+    pre_serialization_funcs = {"slice_obj": pre_serialize_slice_obj, 
+                               "seed": pre_serialize_seed}
+    de_pre_serialization_funcs = {"slice_obj": de_pre_serialize_slice_obj, 
+                                  "seed": de_pre_serialize_seed}
+    params_to_be_mapped_to_core_attrs = {"slice_obj": slice_obj_1,
+                                         "seed": 5.0}
 
-    array_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    shuffled_array_1 = slice_shuffler.shuffle(array_1)
+    ctor_params = {"validation_and_conversion_funcs": \
+                   validation_and_conversion_funcs,
+                   "pre_serialization_funcs": \
+                   pre_serialization_funcs,
+                   "de_pre_serialization_funcs": \
+                   de_pre_serialization_funcs,
+                   "params_to_be_mapped_to_core_attrs": \
+                   params_to_be_mapped_to_core_attrs,
+                   "skip_validation_and_conversion": \
+                   False}
+    kwargs = ctor_params
+    fancytype_instance = fancytypes.PreSerializableAndUpdatable(**kwargs)
 
-    core_attr_subset = {"slice_obj": slice_obj_2, "not_a_core_attr": None}
-    slice_shuffler.update(core_attr_subset,
-                          skip_validation_and_conversion=False)
-    
-    core_attrs = slice_shuffler.get_core_attrs(deep_copy=False)
+    new_core_attr_subset_candidate = {"slice_obj": slice_obj_2,
+                                      "not_a_core_attr": None}
+    kwargs = {"new_core_attr_subset_candidate": new_core_attr_subset_candidate,
+              "skip_validation_and_conversion": False}
+    fancytype_instance.update(**kwargs)
+        
+    core_attrs = fancytype_instance.get_core_attrs(deep_copy=False)
     assert core_attrs["slice_obj"] == slice_obj_2
     assert core_attrs["slice_obj"] is not slice_obj_2
 
-    core_attr_subset = {"slice_obj": slice_obj_1}
-    slice_shuffler.update(core_attr_subset,
-                          skip_validation_and_conversion=True)
+    new_core_attr_subset_candidate = {"slice_obj": slice_obj_1}
+    kwargs = {"new_core_attr_subset_candidate": new_core_attr_subset_candidate,
+              "skip_validation_and_conversion": True}
+    fancytype_instance.update(**kwargs)
 
-    core_attrs = slice_shuffler.get_core_attrs(deep_copy=False)
+    core_attrs = fancytype_instance.get_core_attrs(deep_copy=False)
     assert core_attrs["slice_obj"] is slice_obj_1
 
-    core_attrs = slice_shuffler.get_core_attrs(deep_copy=True)
+    core_attrs = fancytype_instance.get_core_attrs(deep_copy=True)
     assert core_attrs["slice_obj"] is not slice_obj_1
 
+    return None
 
-    func_to_test = czekitout.check.if_instance_of_any_accepted_types
 
-    unformatted_err_msgs = \
-        (czekitout.check._check_accepted_types_err_msg_1,
-         czekitout.check._check_accepted_types_err_msg_1,
-         czekitout.check._if_instance_of_any_accepted_types_err_msg_1,
-         czekitout.check._if_instance_of_any_accepted_types_err_msg_2,
-         czekitout.check._if_instance_of_any_accepted_types_err_msg_2)
 
-    objs = 2*([1, 2], np.random.default_rng(), tuple, 3)
+def test_2_of_PreSerializableAndUpdatable():
+    slice_obj = slice(None, 6, 1)
+
+    validation_and_conversion_funcs = {"slice_obj": check_and_convert_slice_obj,
+                                       "seed": check_and_convert_seed}
+    pre_serialization_funcs = {"slice_obj": pre_serialize_slice_obj, 
+                               "seed": pre_serialize_seed}
+    de_pre_serialization_funcs = {"slice_obj": de_pre_serialize_slice_obj, 
+                                  "seed": de_pre_serialize_seed}
+    params_to_be_mapped_to_core_attrs = {"slice_obj": slice_obj,
+                                         "seed": 5.0}
+
+    ctor_params = {"validation_and_conversion_funcs": \
+                   validation_and_conversion_funcs,
+                   "pre_serialization_funcs": \
+                   pre_serialization_funcs,
+                   "de_pre_serialization_funcs": \
+                   de_pre_serialization_funcs,
+                   "params_to_be_mapped_to_core_attrs": \
+                   params_to_be_mapped_to_core_attrs,
+                   "skip_validation_and_conversion": \
+                   True}
+    kwargs = ctor_params
+    fancytype_instance = fancytypes.PreSerializableAndUpdatable(**kwargs)
+
+    core_attrs = fancytype_instance.get_core_attrs(deep_copy=False)
+    assert core_attrs["slice_obj"] is slice_obj
+
+    fancytype_instance.validation_and_conversion_funcs
+    fancytype_instance.pre_serialization_funcs
+    fancytype_instance.de_pre_serialization_funcs
+
+    serializable_rep = fancytype_instance.pre_serialize()
+    serialized_rep = fancytype_instance.dumps()
     
-    accepted_type_sets = ((list,),
-                          (np.random._generator.Generator,),
-                          (type, int),
-                          (3, None),
-                          tuple(),
-                          (np.random.RandomState,),
-                          [int, float],
-                          (str, list, type))
+    filename = "slice_shuffler.json"    
+    fancytype_instance.dump(filename, overwrite=True)
+    fancytype_instance.dump(filename, overwrite=True)
+    with pytest.raises(IOError) as err_info:
+        fancytype_instance.dump(filename, overwrite=False)
 
-    obj_names = tuple("obj_"+str(idx+1) for idx in range(len(objs)))
+    pathlib.Path(filename).unlink()
 
-    format_arg_sets = \
-        (("accepted_types", "type"),
-         ("accepted_types", "type"),
-         (obj_names[5], "numpy.random.mtrand.RandomState"),
-         (obj_names[6], str(("int", "float")).replace("\'", "`")),
-         (obj_names[7], str(("str", "list", "type")).replace("\'", "`")))
-
-    for obj_idx, _ in enumerate(objs):
-        kwargs = {"obj": objs[obj_idx],
-                  "obj_name": obj_names[obj_idx],
-                  "accepted_types": accepted_type_sets[obj_idx]}
-        if obj_idx <= 2:
-            assert func_to_test(**kwargs) == None
-        else:
-            args = format_arg_sets[obj_idx-3]
-            err_msg = unformatted_err_msgs[obj_idx-3].format(*args)
-            with pytest.raises(TypeError) as err_info:
-                func_to_test(**kwargs)
-            assert str(err_info.value) == err_msg
-            
     return None
 
 
 
-def test_1_of_if_one_of_any_accepted_strings():
-    func_to_test = czekitout.check.if_one_of_any_accepted_strings
+def test_3_of_PreSerializableAndUpdatable():
+    validation_and_conversion_funcs = {"slice_obj": check_and_convert_slice_obj,
+                                       "seed": check_and_convert_seed}
+    pre_serialization_funcs = {"slice_obj": pre_serialize_slice_obj, 
+                               "seed": pre_serialize_seed}
+    de_pre_serialization_funcs = {"slice_obj": de_pre_serialize_slice_obj, 
+                                  "seed": de_pre_serialize_seed}
+    params_to_be_mapped_to_core_attrs = {"slice_obj": slice(None, 6, 1),
+                                         "seed": 5.0}
 
-    unformatted_err_msgs = \
-        (czekitout.check._if_str_like_err_msg_1,
-         czekitout.check._if_str_like_seq_err_msg_1,
-         czekitout.check._if_one_of_any_accepted_strings_err_msg_1,
-         czekitout.check._if_one_of_any_accepted_strings_err_msg_2,
-         czekitout.check._if_one_of_any_accepted_strings_err_msg_3)
+    ctor_params = {"validation_and_conversion_funcs": \
+                   validation_and_conversion_funcs,
+                   "pre_serialization_funcs": \
+                   pre_serialization_funcs,
+                   "de_pre_serialization_funcs": \
+                   de_pre_serialization_funcs,
+                   "params_to_be_mapped_to_core_attrs": \
+                   params_to_be_mapped_to_core_attrs,
+                   "skip_validation_and_conversion": \
+                   True}
+    kwargs = ctor_params
+    cls_alias = fancytypes.PreSerializableAndUpdatable
+    fancytype_instance_A = cls_alias(**kwargs)
+    fancytype_instances = (fancytype_instance_A,)
 
-    std_str_1 = "foo"
-    std_str_2 = "bar"
-    std_str_3 = "foobar"
-
-    byte_str_1 = bytes(std_str_1, "utf-8")
-    numpy_byte_str_1 = np.array(byte_str_1)
-
-    objs = (std_str_1, byte_str_1, 3, std_str_1) + 3*(std_str_3,)
+    serializable_rep = fancytype_instance_A.pre_serialize()
+    serialized_rep = fancytype_instance_A.dumps()
+    filename = "slice_shuffler.json"    
+    fancytype_instance_A.dump(filename, overwrite=True)
     
-    accepted_string_sets = ((byte_str_1, std_str_2),
-                            (numpy_byte_str_1, std_str_2),
-                            (std_str_1, std_str_2),
-                            (3, std_str_2),
-                            tuple(),
-                            (std_str_1,),
-                            (std_str_1, std_str_2))
+    fancytype_instances += (cls_alias.loads(serialized_rep),
+                            cls_alias.load(filename),
+                            cls_alias.de_pre_serialize(serializable_rep))
 
-    obj_names = tuple("obj_"+str(idx+1) for idx in range(len(objs)))
+    for fancytype_instance_B in fancytype_instances:
+        assert (fancytype_instance_A.core_attrs
+                == fancytype_instance_B.core_attrs)
 
-    format_arg_sets = ((obj_names[2],),
-                       ("accepted_strings",),
-                       ("accepted_strings",),
-                       (obj_names[5], std_str_1),
-                       (obj_names[6], str((std_str_1, std_str_2))))
-
-    for obj_idx, _ in enumerate(objs):
-        kwargs = {"obj": objs[obj_idx],
-                  "obj_name": obj_names[obj_idx],
-                  "accepted_strings": accepted_string_sets[obj_idx]}
-        if obj_idx <= 1:
-            assert func_to_test(**kwargs) == None
-        else:
-            args = format_arg_sets[obj_idx-2]
-            err_msg = unformatted_err_msgs[obj_idx-2].format(*args)
-            with pytest.raises(TypeError) as err_info:
-                func_to_test(**kwargs)
-            assert str(err_info.value) == err_msg
-            
-    return None
-
-
-
-def test_1_of_if_complex_numpy_array():
-    func_to_test = czekitout.check.if_complex_numpy_array
-
-    obj_name = "obj"
-
-    complex_two_column_numpy_matrix = (np.random.rand(5, 2)
-                                       + 1j*np.random.rand(5, 2))
-    real_two_column_numpy_matrix = complex_two_column_numpy_matrix.real
-    pairs_of_complex_numbers = complex_two_column_numpy_matrix.tolist()
-    pairs_of_real_numbers = real_two_column_numpy_matrix.tolist()
-
-    kwargs = {"obj": complex_two_column_numpy_matrix, "obj_name": obj_name}
-    expected_result = None
-    assert func_to_test(**kwargs) == expected_result
-
-    kwargs = {"obj": real_two_column_numpy_matrix, "obj_name": obj_name}
-    expected_exception = TypeError
-    with pytest.raises(expected_exception) as err_info:
-        func_to_test(**kwargs)
-
-    kwargs = {"obj": pairs_of_complex_numbers, "obj_name": obj_name}
-    expected_exception = TypeError
-    with pytest.raises(expected_exception) as err_info:
-        func_to_test(**kwargs)
-
-    kwargs = {"obj": pairs_of_real_numbers, "obj_name": obj_name}
-    expected_exception = TypeError
-    with pytest.raises(expected_exception) as err_info:
-        func_to_test(**kwargs)
-
-    return None
-
-
-
-def test_1_of_if_callable():
-    func_to_test = czekitout.check.if_callable
-
-    unformatted_err_msg_1 = czekitout.check._check_obj_name_err_msg_1
-    unformatted_err_msg_2 = czekitout.check._if_callable_err_msg_1
-
-    obj_name = "obj"
-
-    err_msg_1 = unformatted_err_msg_1.format("obj_name", "str")
-    err_msg_2 = unformatted_err_msg_2.format(obj_name)
-
-    kwargs = {"obj": max, "obj_name": obj_name}
-    expected_result = None
-    assert func_to_test(**kwargs) == expected_result
-
-    kwargs = {"obj": "_".join, "obj_name": obj_name}
-    expected_result = None
-    assert func_to_test(**kwargs) == expected_result
-
-    kwargs = {"obj": max, "obj_name": None}
-    expected_exception = TypeError
-    expected_err_msg = err_msg_1
-    with pytest.raises(expected_exception) as err_info:
-        func_to_test(**kwargs)
-    assert str(err_info.value) == expected_err_msg
-
-    kwargs = {"obj": 3, "obj_name": obj_name}
-    expected_exception = TypeError
-    expected_err_msg = err_msg_2
-    with pytest.raises(expected_exception) as err_info:
-        func_to_test(**kwargs)
-    assert str(err_info.value) == expected_err_msg
+    pathlib.Path(filename).unlink()
 
     return None
 

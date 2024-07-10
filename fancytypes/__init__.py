@@ -58,6 +58,22 @@ __all__ = ["Checkable",
 
 
 
+def _check_and_convert_validation_and_conversion_funcs(params):
+    err_msg_1 = _check_and_convert_validation_and_conversion_funcs_err_msg_1
+
+    obj_name = "validation_and_conversion_funcs"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    validation_and_conversion_funcs = czekitout.convert.to_dict(**kwargs).copy()
+
+    for key in validation_and_conversion_funcs:
+        validation_and_conversion_func = validation_and_conversion_funcs[key]
+        if not callable(validation_and_conversion_func):
+            raise TypeError(err_msg_1)
+
+    return validation_and_conversion_funcs
+
+
+
 def _check_and_convert_skip_validation_and_conversion(params):
     obj_name = "skip_validation_and_conversion"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
@@ -67,99 +83,121 @@ def _check_and_convert_skip_validation_and_conversion(params):
 
 
 
+def _check_and_convert_params_to_be_mapped_to_core_attrs(params):
+    params["name_of_obj_alias_of_core_attrs_candidate"] = \
+        "params_to_be_mapped_to_core_attrs"
+    params_to_be_mapped_to_core_attrs = \
+        _check_and_convert_core_attrs_candidate(params)
+
+    del params["name_of_obj_alias_of_core_attrs_candidate"]
+
+    return params_to_be_mapped_to_core_attrs
+
+
+
+def _check_and_convert_core_attrs_candidate(params):
+    unformatted_err_msg_1 = _check_and_convert_core_attrs_candidate_err_msg_1
+
+    obj_name = \
+        params["name_of_obj_alias_of_core_attrs_candidate"]
+    kwargs = \
+        {"obj": params[obj_name], "obj_name": obj_name}
+    core_attrs_candidate = \
+        czekitout.convert.to_dict(**kwargs).copy()
+
+    validation_and_conversion_funcs = \
+        params["validation_and_conversion_funcs"]
+
+    key_set_1 = sorted(list(validation_and_conversion_funcs.keys()))
+    key_set_2 = sorted(list(core_attrs_candidate.keys()))
+    if key_set_1 != key_set_2:
+        obj_name = params["name_of_obj_alias_of_core_attrs_candidate"]
+        err_msg_1 = unformatted_err_msg_1.format(obj_name)
+        raise KeyError(err_msg_1)
+        
+    for key in validation_and_conversion_funcs:
+        validation_and_conversion_func = validation_and_conversion_funcs[key]
+        
+        kwargs = \
+            {"params": core_attrs_candidate}
+        core_attr_candidate = \
+            validation_and_conversion_func(**kwargs)
+        
+        core_attrs_candidate[key] = \
+            core_attr_candidate
+
+    return core_attrs_candidate
+
+
+
 _default_skip_validation_and_conversion = False
 
 
 
 class Checkable():
-    r"""A type with read-only core attributes that enforces validation upon
-    construction if specified.
+    r"""A type that can perform user-defined validations and conversions of a 
+    set of parameters upon construction.
 
     Parameters
     ----------
-    ctor_params : `dict`
-        A `dict` representation of the construction parameters: each `dict` key
-        is a `str` representing the name of a construction parameter, and the
-        corresponding `dict` value is the object to which said construction
-        parameter is set. During construction, each construction parameter is
-        potentially converted, and then subsequently set to a so-called "core
-        attribute".
+    validation_and_conversion_funcs : `dict`
+        A `dict` object of callable objects.
+    params_to_be_mapped_to_core_attrs : `dict`
+        A `dict` object that has the same keys as
+        ``validation_and_conversion_funcs``.
     skip_validation_and_conversion : `bool`
-        If ``skip_validation_and_conversion`` is set to ``False``, then the
-        validation and conversion functions specified in
-        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
-        applied to the construction parameters ``ctor_params``.
+        Let ``core_attrs`` denote the attribute
+        :attr:`fancytypes.Checkable.core_attrs`, which is a `dict` object.
+
+        If ``skip_validation_and_conversion`` is set to ``False``, then for each
+        key ``key`` in ``validation_and_conversion_funcs``, ``core_attrs[key]``
+        is set to ``validation_and_conversion_funcs[key]
+        (params_to_be_mapped_to_core_attrs)``.
 
         Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-        then the validation and conversion steps are skipped. This option is
-        desired primarily when the user wants to avoid potentially expensive
-        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        then ``core_attrs`` is set to
+        ``params_to_be_mapped_to_core_attrs``. This option is desired primarily
+        when the user wants to avoid potentially expensive copies and/or
+        conversions of the `dict` values of
+        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
         copies or conversions are made in this case.
     
     Attributes
     ----------
-    core_attrs : `dict`, read-only
-        A `dict` representation of the core attributes: each `dict` key is a
-        `str` representing the name of a core attribute, and the corresponding
-        `dict` value is the object to which said core attribute is set.
     validation_and_conversion_funcs : `dict`, read-only
-        A `dict` storing validation and conversion functions that are applied to
-        the construction parameters ``ctor_params``: for each `dict` key
-        ``ctor_param_name`` in ``ctor_attrs``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
-        validation and conversion function that is applied to the construction
-        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
-        keys of ``validation_and_conversion_funcs`` must match those exactly of
-        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` should take
-        ``ctor_params`` as the only input argument and return the potentially
-        converted construction parameter with the name specified by
-        ``ctor_param_name``.
+        Same as the constructor parameter of the same name.
+    core_attrs : `dict`, read-only
+        The "core attributes", represented as a `dict` object. For each `dict`
+        key ``key`` in ``core_attrs``,
+        ``validation_and_conversion_funcs[key](core_attrs)`` is expected to not
+        raise an exception.
 
     """
     def __init__(self,
-                 ctor_params,
+                 validation_and_conversion_funcs,
+                 params_to_be_mapped_to_core_attrs,
                  skip_validation_and_conversion=\
                  _default_skip_validation_and_conversion):
+        ctor_params = {key: val
+                       for key, val in locals().items()
+                       if (key not in ("self", "__class__"))}
+
+        func_alias = _check_and_convert_validation_and_conversion_funcs
+        self._validation_and_conversion_funcs = func_alias(params=ctor_params)
+
         params = \
             {"skip_validation_and_conversion": skip_validation_and_conversion}
         skip_validation_and_conversion = \
             _check_and_convert_skip_validation_and_conversion(params)
 
         if (skip_validation_and_conversion == False):
-            self._check_ctor_params_and_set_core_attrs(ctor_params)
+            params = \
+                ctor_params
+            self._core_attrs = \
+                _check_and_convert_params_to_be_mapped_to_core_attrs(params)
         else:
-            self._core_attrs = ctor_params
-
-        return None
-
-
-
-    def _check_ctor_params_and_set_core_attrs(self, ctor_params):
-        kwargs = {"obj": self._validation_and_conversion_funcs,
-                  "obj_name": "_validation_and_conversion_funcs"}
-        czekitout.check.if_dict_like(**kwargs)
-
-        kwargs = {"obj": ctor_params, "obj_name": "ctor_params"}
-        czekitout.check.if_dict_like(**kwargs)
-
-        validation_and_conversion_funcs = \
-            self._validation_and_conversion_funcs
-        
-        ctor_param_names = sorted(list(validation_and_conversion_funcs.keys()))
-        if ctor_param_names != sorted(list(ctor_params.keys())):
-            raise KeyError(_checkable_err_msg_1)
-
-        self._core_attrs = dict()
-        for ctor_param_name in ctor_param_names:
-            validation_and_conversion_func = \
-                validation_and_conversion_funcs[ctor_param_name]
-            if not callable(validation_and_conversion_func):
-                raise TypeError(_checkable_err_msg_2)
-            core_attr = \
-                validation_and_conversion_func(params=ctor_params)
-            self._core_attrs[ctor_param_name] = \
-                core_attr
+            self._core_attrs = \
+                params_to_be_mapped_to_core_attrs
 
         return None
 
@@ -182,7 +220,7 @@ class Checkable():
 
 def _update_old_core_attr_set_and_return_new_core_attr_set(
         skip_validation_and_conversion,
-        new_core_attr_subset,
+        new_core_attr_subset_candidate,
         old_core_attr_set,
         validation_and_conversion_funcs):
     params = \
@@ -190,18 +228,21 @@ def _update_old_core_attr_set_and_return_new_core_attr_set(
     skip_validation_and_conversion = \
         _check_and_convert_skip_validation_and_conversion(params)
 
-    kwargs = {"obj": new_core_attr_subset, "obj_name": "core_attr_subset"}
+    kwargs = {"obj": new_core_attr_subset_candidate,
+              "obj_name": "new_core_attr_subset_candidate"}
     czekitout.check.if_dict_like(**kwargs)
     
-    new_core_attr_set = new_core_attr_subset.copy()
+    new_core_attr_set = new_core_attr_subset_candidate.copy()
 
     for core_attr_name in old_core_attr_set.keys():
-        if core_attr_name not in new_core_attr_subset:
-            new_core_attr = old_core_attr_set[core_attr_name]
-            new_core_attr_set[core_attr_name] = new_core_attr
+        if core_attr_name not in new_core_attr_subset_candidate:
+            new_core_attr_candidate = \
+                old_core_attr_set[core_attr_name]
+            new_core_attr_subset_candidate[core_attr_name] = \
+                new_core_attr_candidate
 
     names_of_core_attrs_to_update = tuple()
-    for core_attr_name in new_core_attr_subset.keys():
+    for core_attr_name in new_core_attr_subset_candidate:
         if core_attr_name not in old_core_attr_set:
             del new_core_attr_set[core_attr_name]
         else:
@@ -209,11 +250,10 @@ def _update_old_core_attr_set_and_return_new_core_attr_set(
 
     for ctor_param_name in names_of_core_attrs_to_update:
         validation_and_conversion_func = \
-            self._validation_and_conversion_funcs[ctor_param_name]
+            validation_and_conversion_funcs[ctor_param_name]
 
         if (skip_validation_and_conversion == False):
-            kwargs = {"params": new_core_attr_set}
-            new_core_attr = validation_and_conversion_func(**kwargs)
+            new_core_attr = validation_and_conversion_func(new_core_attr_set)
             new_core_attr_set[ctor_param_name] = new_core_attr
 
     return new_core_attr_set
@@ -234,101 +274,97 @@ _default_deep_copy = True
 
 
 class Updatable(Checkable):
-    r"""A type with updatable core attributes that enforces validation upon
-    constructing or updating an instance of said type.
+    r"""A type that can perform user-defined validations and conversions of a 
+    set of parameters upon construction, and that has an updatable subset of 
+    attributes.
 
     Parameters
     ----------
-    ctor_params : `dict`
-        A `dict` representation of the construction parameters: each `dict` key
-        is a `str` representing the name of a construction parameter, and the
-        corresponding `dict` value is the object to which said construction
-        parameter is set. During construction, each construction parameter is
-        potentially converted, and then subsequently set to a so-called "core
-        attribute".
+    validation_and_conversion_funcs : `dict`
+        A `dict` object of callable objects.
+    params_to_be_mapped_to_core_attrs : `dict`
+        A `dict` object that has the same keys as
+        ``validation_and_conversion_funcs``.
     skip_validation_and_conversion : `bool`
-        If ``skip_validation_and_conversion`` is set to ``False``, then the
-        validation and conversion functions specified in
-        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
-        applied to the construction parameters ``ctor_params``.
+        Let ``core_attrs`` denote the attribute
+        :attr:`fancytypes.Updatable.core_attrs`, which is a `dict` object.
+
+        If ``skip_validation_and_conversion`` is set to ``False``, then for each
+        key ``key`` in ``validation_and_conversion_funcs``, ``core_attrs[key]``
+        is set to ``validation_and_conversion_funcs[key]
+        (params_to_be_mapped_to_core_attrs)``.
 
         Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-        then the validation and conversion steps are skipped. This option is
-        desired primarily when the user wants to avoid potentially expensive
-        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        then ``core_attrs`` is set to
+        ``params_to_be_mapped_to_core_attrs``. This option is desired primarily
+        when the user wants to avoid potentially expensive copies and/or
+        conversions of the `dict` values of
+        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
         copies or conversions are made in this case.
 
     Attributes
     ----------
-    core_attrs : `dict`, read-only
-        A `dict` representation of the core attributes: each `dict` key is a
-        `str` representing the name of a core attribute, and the corresponding
-        `dict` value is the object to which said core attribute is set. Note
-        that it is only the core attributes which can be updated directly.
     validation_and_conversion_funcs : `dict`, read-only
-        A `dict` storing validation and conversion functions that are applied to
-        the construction parameters ``ctor_params`` and to any of the core
-        attributes that are to be updated: for each `dict` key
-        ``ctor_param_name`` in ``ctor_attrs``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
-        validation and conversion function that is applied to the construction
-        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
-        keys of ``validation_and_conversion_funcs`` must match those exactly of
-        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` should take
-        ``ctor_params`` or ``core_attrs`` as the only input argument and return
-        the potentially converted construction parameter or core attribute with
-        the name specified by ``ctor_param_name``.
+        Same as the constructor parameter of the same name.
+    core_attrs : `dict`, read-only
+        The "core attributes", represented as a `dict` object. For each `dict`
+        key ``key`` in ``core_attrs``,
+        ``validation_and_conversion_funcs[key](core_attrs)`` is expected to not
+        raise an exception.
 
     """
     def __init__(self,
-                 ctor_params,
+                 validation_and_conversion_funcs,
+                 params_to_be_mapped_to_core_attrs,
                  skip_validation_and_conversion=\
                  _default_skip_validation_and_conversion):
-        Checkable.__init__(self, ctor_params, skip_validation_and_conversion)
+        ctor_params = {key: val
+                       for key, val in locals().items()
+                       if (key not in ("self", "__class__"))}
+        kwargs = ctor_params
+        Checkable.__init__(self, **kwargs)
 
         return None
 
 
 
     def update(self,
-               core_attr_subset,
+               new_core_attr_subset_candidate,
                skip_validation_and_conversion=\
                _default_skip_validation_and_conversion):
         r"""Update a subset of the core attributes.
 
         Parameters
         ----------
-        core_attr_subset : `dict`
-            A `dict` specifying how to update a subset of the core attributes:
-            each `dict` key of ``core_attr_subset`` that is also a key of the
-            instance attribute :attr:`fancytypes.Updatable.core_attrs` is a
-            `str` representing the name of a core attribute, and the
-            corresponding `dict` value is the object to which said core
-            attribute is to be set. Any `dict` keys of ``core_attr_subset`` that
-            are not keys of the instance attribute
-            :attr:`fancytypes.Updatable.core_attrs` are ignored in the update
-            procedure along with the corresponding `dict` values.
+        new_core_attr_subset_candidate : `dict`
+            A `dict` object.
         skip_validation_and_conversion : `bool`
-            If ``skip_validation_and_conversion`` is set to ``False``, then a
-            upon updating the subset of core attributes, the corresponding
-            validation and conversion functions specified in
-            :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
-            applied. 
+            Let ``core_attrs`` and ``validation_and_conversion_funcs`` denote
+            the attributes :attr:`fancytypes.Updatable.core_attrs` and
+            :attr:`fancytypes.Updatable.validation_and_conversion_funcs`
+            respectively, which are both `dict` objects.
+
+            If ``skip_validation_and_conversion`` is set to ``False``, then for
+            each key ``key`` in ``core_attrs`` that is also in
+            ``new_core_attr_subset_candidate``, ``core_attrs[key]`` is set to
+            ``validation_and_conversion_funcs[key]
+            (new_core_attr_subset_candidate)``.
 
             Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-            then the validation and conversion steps are skipped. This option is
-            desired primarily when the user wants to avoid potentially expensive
-            copies and/or conversions of the `dict` values of
-            ``core_attr_subset``, as no copies or conversions are made in this
-            case.
+            then for each key ``key`` in ``core_attrs`` that is also in
+            ``new_core_attr_subset_candidate``, ``core_attrs[key]`` is set to
+            ``new_core_attr_subset_candidate[key]``. This option is desired
+            primarily when the user wants to avoid potentially expensive copies
+            and/or conversions of the `dict` values of
+            ``new_core_attr_subset_candidate``, as it is guaranteed that no
+            copies or conversions are made in this case.
 
         """
         kwargs = \
             {"skip_validation_and_conversion": \
              skip_validation_and_conversion,
-             "new_core_attr_subset": \
-             core_attr_subset,
+             "new_core_attr_subset_candidate": \
+             new_core_attr_subset_candidate,
              "old_core_attr_set": \
              self._core_attrs,
              "validation_and_conversion_funcs": \
@@ -359,11 +395,62 @@ class Updatable(Checkable):
             attribute is set.
 
         """
+        params = {"deep_copy": deep_copy}
+        deep_copy = _check_and_convert_deep_copy(params)
+        
         core_attrs = (self.core_attrs
                       if (deep_copy == True)
                       else self._core_attrs)
 
         return core_attrs
+
+
+
+def _preliminary_check_of_pre_serialization_funcs(params):
+    err_msg_1 = _preliminary_check_of_pre_serialization_funcs_err_msg_1
+    err_msg_2 = _preliminary_check_of_pre_serialization_funcs_err_msg_2
+
+    obj_name = "pre_serialization_funcs"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
+
+    validation_and_conversion_funcs = params["validation_and_conversion_funcs"]
+
+    key_set_1 = sorted(list(validation_and_conversion_funcs.keys()))
+    key_set_2 = sorted(list(pre_serialization_funcs.keys()))
+    if key_set_1 != key_set_2:
+        raise KeyError(err_msg_1)
+    
+    for key in pre_serialization_funcs:
+        pre_serialization_func = pre_serialization_funcs[key]
+        if not callable(pre_serialization_func):
+            raise TypeError(err_msg_2)
+
+    return None
+
+
+
+def _preliminary_check_of_de_pre_serialization_funcs(params):
+    err_msg_1 = _preliminary_check_of_de_pre_serialization_funcs_err_msg_1
+    err_msg_2 = _preliminary_check_of_de_pre_serialization_funcs_err_msg_2
+
+    obj_name = "de_pre_serialization_funcs"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    de_pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
+
+    validation_and_conversion_funcs = params["validation_and_conversion_funcs"]
+
+    key_set_1 = sorted(list(validation_and_conversion_funcs.keys()))
+    key_set_2 = sorted(list(de_pre_serialization_funcs.keys()))
+    if key_set_1 != key_set_2:
+        raise KeyError(err_msg_1)
+    
+    for key in de_pre_serialization_funcs:
+        de_pre_serialization_func = de_pre_serialization_funcs[key]
+        if not callable(de_pre_serialization_func):
+            raise TypeError(err_msg_2)
+
+    return None
 
 
 
@@ -382,229 +469,193 @@ _default_overwrite = False
 
 class PreSerializable(Checkable):
     r"""A type that is pre-serializable, that can be constructed from a 
-    serializable representation, and that enforces validation upon construction.
+    serializable representation, and that can perform user-defined validations 
+    and conversions of a set of parameters upon construction.
 
     We define pre-serialization as the process of converting an object into a
     form that can be subsequently serialized into a JSON format. We refer to
     objects resulting from pre-serialization as serializable objects.
 
     We define de-pre-serialization as the process of converting a serializable
-    object into its original type, i.e. de-pre-serialization is the reverse
-    process of pre-serialization.
-
-    **Note**: One cannot create instances of :class:`fancytypes.PreSerializable`
-    without throwing an error. In order to make proper use of the
-    :class:`fancytypes.PreSerializable` class, one must define a subclass which
-    inherits from it and set three private class attributes in the definition:
-    ``_validation_and_conversion_funcs``, ``_pre_serialization_funcs``, and
-    ``_de_pre_serialization_funcs``. 
-
-    ``_validation_and_conversion_funcs`` is a `dict` storing validation and
-    conversion functions to be applied to the construction parameters
-    [represented by the `dict` ``ctor_params`` below]: for each `dict` key
-    ``ctor_param_name`` in ``ctor_params``,
-    ``_validation_and_conversion_funcs[ctor_param_name]`` yields the validation
-    and conversion function to be applied to the construction parameter object
-    ``ctor_params[ctor_param_name]``. Note that the `dict` keys of
-    ``_validation_and_conversion_funcs`` must match those exactly of
-    ``ctor_params``. Furthermore, for each `dict` key ``ctor_param_name``,
-    ``_validation_and_conversion_funcs[ctor_param_name]`` should take
-    ``ctor_params`` as the only input argument and return the potentially
-    converted construction parameter with the name specified by
-    ``ctor_param_name``.
-
-    ``_pre_serialization_funcs`` is a `dict` storing pre-serialization functions
-    to be applied to the core attributes [represented by the instance attribute
-    :attr:`fancytypes.PreSerializable.core_attrs` introduced below]: for each
-    `dict` key ``core_attr_name`` in
-    :attr:`fancytypes.PreSerializable.core_attrs` [the latter of which we denote
-    here as ``core_attrs``], ``_pre_serialization_funcs[core_attr_name]`` yields
-    the pre-serialization function to be applied to the core attribute
-    ``core_attrs[core_attr_name]``, upon calling the method
-    :meth:`fancytypes.PreSerializable.pre_serialize`. Note that the `dict` keys
-    of ``_pre_serialization_funcs`` must match those exactly of ``core_attrs``
-    and ``ctor_params``. Furthermore, for each `dict` key ``core_attr_name``,
-    ``_pre_serialization_funcs[core_attr_name]`` should take ``core_attrs`` as
-    the only input argument and return the serializable representation of the
-    core attribute with the name specified by ``core_attr_name``.
-
-    ``_de_pre_serialization_funcs`` is a `dict` storing de-pre-serialization
-    functions to be applied to serializable representations of the core
-    attributes of any instance of the :class:`fancytypes.PreSerializable` class
-    or subclass: for each `dict` key ``core_attr_name`` in ``core_attrs``,
-    ``_de_pre_serialization_funcs[core_attr_name]`` yields the
-    de-pre-serialization function to be applied to the serializable
-    representation of the core attribute with the name specified by
-    ``core_attr_name``, upon calling the class method
-    :meth:`fancytypes.PreSerializable.de_pre_serialize`. Note that the `dict`
-    keys of ``_de_pre_serialization_funcs`` must match those exactly of
-    ``core_attrs`` and ``ctor_params``. Furthermore, for each `dict` key
-    ``core_attr_name``, ``_de_pre_serialization_funcs[core_attr_name]`` should
-    take the serializable representation of the core attribute with the name
-    specified by ``core_attr_name`` as the only input argument and return the
-    de-serialized form of said core attribute.
+    object into an instance of the type :class:`fancytypes.PreSerializable` or a
+    subclass thereof, i.e. de-pre-serialization is the reverse process of
+    pre-serialization.
 
     Parameters
     ----------
-    ctor_params : `dict`
-        A `dict` representation of the construction parameters: each `dict` key
-        is a `str` representing the name of a construction parameter, and the
-        corresponding `dict` value is the object to which said construction
-        parameter is set. During construction, each construction parameter is
-        potentially converted, and then subsequently set to a so-called "core
-        attribute".
+    validation_and_conversion_funcs : `dict`
+        A `dict` object of callable objects.
+    pre_serialization_funcs : `dict`
+        A `dict` object of callable objects that has the same keys as
+        ``validation_and_conversion_funcs``. 
+
+        Let ``core_attrs_candidate_1`` be any `dict` object that has the same
+        keys as ``validation_and_conversion_funcs`` where for each `dict` key
+        ``key`` in ``validation_and_conversion_funcs``,
+        ``validation_and_conversion_funcs[key](core_attrs_candidate_1)`` does
+        not raise an exception.
+
+        For each `dict` key ``key`` in ``validation_and_conversion_funcs``,
+        ``pre_serialization_funcs[key](core_attrs_candidate_1[key])`` is
+        expected to yield a serializable object, i.e. it should yield an object
+        that can be passed into the function ``json.dumps`` without raising an
+        exception.
+    de_pre_serialization_funcs : `dict`
+        A `dict` object of callable objects that has the same keys as
+        ``validation_and_conversion_funcs``. 
+
+        Let ``serializable_rep`` be a `dict` object that has the same keys as
+        ``validation_and_conversion_funcs`` where for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``, ``serializable_rep[key]`` is set to
+        ``pre_serialization_funcs[key](core_attrs_candidate_1[key])``, with
+        ``core_attrs_candidate_1`` being defined in the above description of
+        ``pre_serialization_funcs``.
+
+        The items of ``de_pre_serialization_funcs`` are expected to be set to
+        callable objects that would lead to
+        ``de_pre_serialization_funcs[key](serializable_rep[key])`` not raising
+        an exception for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``.
+
+        Let ``core_attrs_candidate_2`` be a `dict` object that has the same keys
+        as ``validation_and_conversion_funcs`` where for each `dict` key ``key``
+        in ``validation_and_conversion_funcs``, ``core_attrs_candidate_2[key]``
+        is set to ``de_pre_serialization_funcs[key](serializable_rep[key])``.
+
+        The items of ``de_pre_serialization_funcs`` are also expected to be set
+        to callable objects that would lead to
+        ``validation_and_conversion_funcs[key](core_attrs_candidate_2)`` not
+        raising an exception for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``.
+    params_to_be_mapped_to_core_attrs : `dict`
+        A `dict` object that has the same keys as
+        ``validation_and_conversion_funcs``.
     skip_validation_and_conversion : `bool`
-        If ``skip_validation_and_conversion`` is set to ``False``, then the
-        validation and conversion functions specified in
-        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
-        applied to the construction parameters ``ctor_params``.
+        Let ``core_attrs`` denote the attribute
+        :attr:`fancytypes.PreSerializable.core_attrs`, which is a `dict` object.
+
+        If ``skip_validation_and_conversion`` is set to ``False``, then for each
+        key ``key`` in ``validation_and_conversion_funcs``, ``core_attrs[key]``
+        is set to ``validation_and_conversion_funcs[key]
+        (params_to_be_mapped_to_core_attrs)``.
 
         Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-        then the validation and conversion steps are skipped. This option is
-        desired primarily when the user wants to avoid potentially expensive
-        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        then ``core_attrs`` is set to
+        ``params_to_be_mapped_to_core_attrs``. This option is desired primarily
+        when the user wants to avoid potentially expensive copies and/or
+        conversions of the `dict` values of
+        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
         copies or conversions are made in this case.
 
     Attributes
     ----------
-    core_attrs : `dict`, read-only
-        A `dict` representation of the core attributes: each `dict` key is a
-        `str` representing the name of a core attribute, and the corresponding
-        `dict` value is the object to which said core attribute is set.
-
-        **Note**: If the currently documented class, which we denote here as
-        ``cls``, is neither :class:`PreSerializable` nor
-        :class:`PreSerializableAndUpdatable`, then in order for ``cls`` to be
-        well-behaved, it must satisfy ``instance.core_attrs ==
-        cls(**instance.core_attrs).core_attrs``, where ``instance`` is any
-        instance of ``cls`` that was constructed without error.
     validation_and_conversion_funcs : `dict`, read-only
-        A `dict` storing validation and conversion functions that are applied to
-        the construction parameters ``ctor_params``: for each `dict` key
-        ``ctor_param_name`` in ``ctor_attrs``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
-        validation and conversion function that is applied to the construction
-        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
-        keys of ``validation_and_conversion_funcs`` must match those exactly of
-        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` should take
-        ``ctor_params`` as the only input argument and return the potentially
-        converted construction parameter with the name specified by
-        ``ctor_param_name``.
+        Same as the constructor parameter of the same name.
     pre_serialization_funcs : `dict`, read-only
-        A `dict` storing pre-serialization functions that are applied to the
-        core attributes ``core_attrs``: for each `dict` key ``core_attr_name``
-        in ``core_attrs``, ``pre_serialization_funcs[core_attr_name]`` yields
-        the pre-serialization function that is applied to the core attribute
-        ``core_attrs[core_attr_name]``, upon calling the method
-        :meth:`fancytypes.PreSerializable.pre_serialize`. Note that the `dict`
-        keys of ``pre_serialization_funcs`` must match those exactly of
-        ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
-        ``pre_serialization_funcs[core_attr_name]`` should take ``core_attrs``
-        as the only input argument and return the serializable representation of
-        the core attribute with the name specified by ``core_attr_name``.
+        Same as the constructor parameter of the same name.
     de_pre_serialization_funcs : `dict`, read-only
-        A `dict` storing de-pre-serialization functions that are applied to
-        serializable representations of the core attributes ``core_attrs``: for
-        each `dict` key ``core_attr_name`` in ``core_attrs``,
-        ``de_pre_serialization_funcs[core_attr_name]`` yields the
-        de-pre-serialization function that is applied to the serializable
-        representation of the core attribute ``core_attrs[core_attr_name]``,
-        upon calling the method
-        :meth:`fancytypes.PreSerializable.de_pre_serialize`. Note that the
-        `dict` keys of ``de_pre_serialization_funcs`` must match those exactly
-        of ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
-        ``de_pre_serialization_funcs[core_attr_name]`` should take the
-        serializable representation of the core attribute with the name
-        specified by ``core_attr_name`` as the only input argument and return
-        the de-serialized form of said core attribute.
+        Same as the constructor parameter of the same name.
+    core_attrs : `dict`, read-only
+        The "core attributes", represented as a `dict` object. For each `dict`
+        key ``key`` in ``core_attrs``,
+        ``validation_and_conversion_funcs[key](core_attrs)`` is expected to not
+        raise an exception.
 
     """
     def __init__(self,
-                 ctor_params,
+                 validation_and_conversion_funcs,
+                 pre_serialization_funcs,
+                 de_pre_serialization_funcs,
+                 params_to_be_mapped_to_core_attrs,
                  skip_validation_and_conversion=\
                  _default_skip_validation_and_conversion):
-        Checkable.__init__(self, ctor_params, skip_validation_and_conversion)
-
-        kwargs = {"obj": self._pre_serialization_funcs,
-                  "obj_name": "_pre_serialization_funcs"}
-        czekitout.check.if_dict_like(**kwargs)
-
-        kwargs = {"obj": self._de_pre_serialization_funcs,
-                  "obj_name": "_de_pre_serialization_funcs"}
-        czekitout.check.if_dict_like(**kwargs)
-
-        validation_and_conversion_funcs = self._validation_and_conversion_funcs
-        pre_serialization_funcs = self._pre_serialization_funcs
-        de_pre_serialization_funcs = self._de_pre_serialization_funcs
+        ctor_params = {key: val
+                       for key, val in locals().items()
+                       if (key not in ("self", "__class__"))}
         
-        core_attr_names = sorted(list(pre_serialization_funcs.keys()))
-        
-        if core_attr_names != sorted(list(self._core_attrs.keys())):
-            raise KeyError(_pre_serializable_err_msg_1)
-        for core_attr_name in self._core_attrs:
-            if not callable(pre_serialization_funcs[core_attr_name]):
-                raise TypeError(_pre_serializable_err_msg_2)
+        kwargs = {"validation_and_conversion_funcs": \
+                  validation_and_conversion_funcs,
+                  "params_to_be_mapped_to_core_attrs": \
+                  params_to_be_mapped_to_core_attrs,
+                  "skip_validation_and_conversion": \
+                  skip_validation_and_conversion}
+        Checkable.__init__(self, **kwargs)
 
-        core_attr_names = sorted(list(de_pre_serialization_funcs.keys()))
-        
-        if core_attr_names != sorted(list(self._core_attrs.keys())):
-            raise KeyError(_pre_serializable_err_msg_3)
-        for core_attr_name in core_attr_names:
-            if not callable(de_pre_serialization_funcs[core_attr_name]):
-                raise TypeError(_pre_serializable_err_msg_4)
+        _preliminary_check_of_pre_serialization_funcs(params=ctor_params)
+        self._pre_serialization_funcs = dict(pre_serialization_funcs)
 
+        _preliminary_check_of_de_pre_serialization_funcs(params=ctor_params)
+        self._de_pre_serialization_funcs = dict(de_pre_serialization_funcs)
+        
         if (skip_validation_and_conversion == False):
             try:
                 serializable_rep = self.pre_serialize()
             except:
-                raise ValueError(_pre_serializable_err_msg_5)
+                raise ValueError(_pre_serializable_err_msg_1)
         
             try:
-                construct_ctor_params = \
-                    self._construct_ctor_params_from_serializable_rep
-                
-                ctor_params = construct_ctor_params(serializable_rep)
-                self._check_ctor_params_and_set_core_attrs(ctor_params)
+                kwargs = \
+                    {"serializable_rep": serializable_rep,
+                     "de_pre_serialization_funcs": de_pre_serialization_funcs}
+                core_attrs_candidate = \
+                    self._construct_core_attrs_candidate(**kwargs)
+
+                params = {"core_attrs_candidate": \
+                          core_attrs_candidate,
+                          "name_of_obj_alias_of_core_attrs_candidate": \
+                          "core_attrs_candidate",
+                          "validation_and_conversion_funcs": \
+                          validation_and_conversion_funcs}
+                _ =_check_and_convert_core_attrs_candidate(params)
             except:
-                raise ValueError(_pre_serializable_err_msg_6)
+                raise ValueError(_pre_serializable_err_msg_2)
         
         return None
 
 
 
     @classmethod
-    def _construct_ctor_params_from_serializable_rep(cls, serializable_rep):
-        ctor_params = dict()
-        
-        validation_and_conversion_funcs = cls._validation_and_conversion_funcs
-        
-        de_pre_serialization_funcs = cls._de_pre_serialization_funcs
-        ctor_param_names = sorted(list(de_pre_serialization_funcs.keys()))
-        
-        czekitout.check.if_dict_like(serializable_rep, "serializable_rep")
-        for ctor_param_name in ctor_param_names:
-            if ctor_param_name not in serializable_rep:
-                err_msg = _pre_serializable_err_msg_7.format(ctor_param_name)
-                raise KeyError(err_msg)
-        data = serializable_rep
+    def _construct_core_attrs_candidate(cls,
+                                        serializable_rep,
+                                        de_pre_serialization_funcs):
+        kwargs = {"obj": serializable_rep, "obj_name": "serializable_rep"}
+        serializable_rep = czekitout.convert.to_dict(**kwargs)
 
+        for key in de_pre_serialization_funcs:
+            if key not in serializable_rep:
+                err_msg = _pre_serializable_err_msg_3.format(key)
+                raise KeyError(err_msg)
+            
         try:
-            for ctor_param_name in ctor_param_names:
-                datasubset = data[ctor_param_name]
-                de_pre_serialize = de_pre_serialization_funcs[ctor_param_name]
-                ctor_param = copy.deepcopy(de_pre_serialize(datasubset))
-                ctor_params[ctor_param_name] = ctor_param
+            core_attrs_candidate = dict()
+            
+            for key in de_pre_serialization_funcs:
+                core_attr_name = \
+                    key
+                elem_of_serializable_rep = \
+                    serializable_rep[key]
+                de_pre_serialization_func = \
+                    de_pre_serialization_funcs[key]
+                core_attr_candidate = \
+                    de_pre_serialization_func(elem_of_serializable_rep)
+                core_attrs_candidate[core_attr_name] = \
+                    core_attr_candidate
         except:
-            err_msg = _pre_serializable_err_msg_8.format(ctor_param_name)
+            err_msg = _pre_serializable_err_msg_4
             raise ValueError(err_msg)
 
-        return ctor_params
+        return core_attrs_candidate
 
 
 
     @classmethod
-    def de_pre_serialize(cls, serializable_rep):
+    def de_pre_serialize(cls,
+                         validation_and_conversion_funcs,
+                         pre_serialization_funcs,
+                         de_pre_serialization_funcs,
+                         serializable_rep,
+                         skip_validation_and_conversion=\
+                         _default_skip_validation_and_conversion):
         r"""Construct an instance from a serializable representation.
 
         We define pre-serialization as the process of converting an object into
@@ -612,29 +663,102 @@ class PreSerializable(Checkable):
         to objects resulting from pre-serialization as serializable objects.
 
         We define de-pre-serialization as the process of converting a
-        serializable object into its original type, i.e. de-pre-serialization is
-        the reverse process of pre-serialization.
+        serializable object into an instance of the type
+        :class:`fancytypes.PreSerializable` or a subclass thereof,
+        i.e. de-pre-serialization is the reverse process of pre-serialization.
 
         Parameters
         ----------
+        validation_and_conversion_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        de_pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
         serializable_rep : `dict`
-            A serializable representation of an instance. Serializable
-            representations can be generated using the instance method 
-            :meth:`fancytypes.PreSerializable.pre_serialize`.
+            A `dict` object that has the same keys as
+            ``validation_and_conversion_funcs``.
+
+            The items of ``serializable_rep`` are expected to be set to callable
+            objects that would lead to
+            ``de_pre_serialization_funcs[key](serializable_rep[key])`` not
+            raising an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+
+            Let ``core_attrs_candidate`` be a `dict` object that has the same
+            keys as ``validation_and_conversion_funcs`` where for each `dict`
+            key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs_candidate[key]`` is set to
+            de_pre_serialization_funcs[key](serializable_rep[key])``.
+
+            The items of ``serializable_rep`` are also expected to be set to
+            objects that would lead to
+            ``validation_and_conversion_funcs[key](core_attrs_candidate)`` not
+            raising an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+        skip_validation_and_conversion : `bool`
+            Let ``core_attrs`` denote the attribute
+            :attr:`fancytypes.PreSerializable.core_attrs`, which is a `dict`
+            object.
+
+            If ``skip_validation_and_conversion`` is set to ``False``, then for
+            each key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs[key]`` is set to ``validation_and_conversion_funcs[key]
+            (core_attrs_candidate)``, with ``core_attrs_candidate_`` being
+            defined in the above description of ``serializable_rep``.
+
+            Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+            then ``core_attrs`` is set to ``core_attrs_candidate``. This option
+            is desired primarily when the user wants to avoid potentially
+            expensive copies and/or conversions of the `dict` values of
+            ``core_attrs_candidate``, as it is guaranteed that no copies or
+            conversions are made in this case.
 
         Returns
         -------
-        pre_serializable_obj : :class:`fancytypes.PreSerializable`
+        pre_serializable_obj : Current class
             An instance constructed from the serializable representation
             ``serializable_rep``.
-        """
-        ctor_params = \
-            cls._construct_ctor_params_from_serializable_rep(serializable_rep)
 
-        if (cls is PreSerializable) or (cls is PreSerializableAndUpdatable):
-            pre_serializable_obj = cls(ctor_params)
-        else:
-            pre_serializable_obj = cls(**ctor_params)
+        """
+        _preliminary_check_of_de_pre_serialization_funcs(params=ctor_params)
+        de_pre_serialization_funcs = dict(de_pre_serialization_funcs)
+
+        try:
+            kwargs = \
+                {"serializable_rep": serializable_rep,
+                 "de_pre_serialization_funcs": de_pre_serialization_funcs}
+            core_attrs_candidate = \
+                self._construct_core_attrs_candidate(**kwargs)
+
+            kwargs = {"validation_and_conversion_funcs": \
+                      validation_and_conversion_funcs,
+                      "pre_serialization_funcs": \
+                      pre_serialization_funcs,
+                      "de_pre_serialization_funcs": \
+                      de_pre_serialization_funcs,
+                      "params_to_be_mapped_to_core_attrs": \
+                      core_attrs_candidate,
+                      "skip_validation_and_conversion": \
+                      True}
+            pre_serializable_obj = cls(**kwargs)
+
+            if (skip_validation_and_conversion == False):
+                try:
+                    _ = pre_serializable_obj.pre_serialize()
+                except:
+                    raise ValueError(_pre_serializable_err_msg_1)
+
+                params = {"core_attrs_candidate": \
+                          pre_serializable_obj._core_attrs,
+                          "name_of_obj_alias_of_core_attrs_candidate": \
+                          "pre_serializable_obj._core_attrs",
+                          "validation_and_conversion_funcs": \
+                          validation_and_conversion_funcs}
+                core_attrs =_check_and_convert_core_attrs_candidate(params)
+                pre_serializable_obj._core_attrs = core_attrs
+        except:
+            raise ValueError(_pre_serializable_err_msg_5)
                 
         return pre_serializable_obj
 
@@ -648,8 +772,9 @@ class PreSerializable(Checkable):
         to objects resulting from pre-serialization as serializable objects.
 
         We define de-pre-serialization as the process of converting a
-        serializable object into its original type, i.e. de-pre-serialization is
-        the reverse process of pre-serialization.
+        serializable object into an instance of the type
+        :class:`fancytypes.PreSerializable` or a subclass thereof,
+        i.e. de-pre-serialization is the reverse process of pre-serialization.
 
         Returns
         -------
@@ -657,13 +782,15 @@ class PreSerializable(Checkable):
             A serializable representation of an instance.
 
         """
-        data = dict()
+        serializable_rep = dict()
+        
         for core_attr_name, core_attr in self._core_attrs.items():
-            _pre_serialize = self._pre_serialization_funcs[core_attr_name]
-            datasubset = copy.deepcopy(_pre_serialize(core_attr))
-            data[core_attr_name] = datasubset
-
-        serializable_rep = data
+            pre_serialization_func = \
+                self._pre_serialization_funcs[core_attr_name]
+            elem_of_serializable_rep = \
+                pre_serialization_func(core_attr)
+            serializable_rep[core_attr_name] = \
+                elem_of_serializable_rep
 
         return serializable_rep
 
@@ -703,14 +830,14 @@ class PreSerializable(Checkable):
         -------
 
         """
-        kwargs = {"obj": overwrite, "obj_name": "overwrite"}
-        overwrite = czekitout.convert.to_bool(**kwargs)
+        params = {"overwrite": overwrite}
+        overwrite = _check_and_convert_overwrite(params)
         
         kwargs = {"obj": filename, "obj_name": "filename"}
-        filename = czekitout.convert.to_str_from_path_like(**kwargs)
+        filename = czekitout.convert.to_str_from_str_like(**kwargs)
         if pathlib.Path(filename).is_file():
             if not overwrite:
-                raise IOError(_pre_serializable_err_msg_9.format(filename))
+                raise IOError(_pre_serializable_err_msg_6.format(filename))
 
         serializable_rep = self.pre_serialize()
 
@@ -721,14 +848,20 @@ class PreSerializable(Checkable):
                           ensure_ascii=False,
                           indent=4)
         except:
-            raise IOError(_pre_serializable_err_msg_10.format(filename))
+            raise IOError(_pre_serializable_err_msg_7.format(filename))
             
         return None
 
 
 
     @classmethod
-    def loads(cls, serialized_rep):
+    def loads(cls,
+              validation_and_conversion_funcs,
+              pre_serialization_funcs,
+              de_pre_serialization_funcs,
+              serialized_rep,
+              skip_validation_and_conversion=\
+              _default_skip_validation_and_conversion):
         r"""Construct an instance from a serialized representation.
 
         Users can generate serialized representations using the method
@@ -736,12 +869,56 @@ class PreSerializable(Checkable):
 
         Parameters
         ----------
+        validation_and_conversion_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        de_pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
         serialized_rep : `str` | `bytes` | `bytearray`
             The serialized representation.
 
+            ``serialized_rep`` is expected to be such that
+            ``json.loads(serialized_rep)`` does not raise an exception.
+
+            Let ``serializable_rep=json.loads(serialized_rep)``. 
+
+            ``serialized_rep`` is also expected to be such that
+            ``de_pre_serialization_funcs[key](serializable_rep[key])`` does not
+            raise an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+
+            Let ``core_attrs_candidate`` be a `dict` object that has the same
+            keys as ``validation_and_conversion_funcs`` where for each `dict`
+            key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs_candidate[key]`` is set to
+            de_pre_serialization_funcs[key](serializable_rep[key])``.
+
+            ``serialized_rep`` is also expected to be such that
+            ``validation_and_conversion_funcs[key](core_attrs_candidate)`` does
+            not raising an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+        skip_validation_and_conversion : `bool`
+            Let ``core_attrs`` denote the attribute
+            :attr:`fancytypes.PreSerializable.core_attrs`, which is a `dict`
+            object.
+
+            If ``skip_validation_and_conversion`` is set to ``False``, then for
+            each key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs[key]`` is set to ``validation_and_conversion_funcs[key]
+            (core_attrs_candidate)``, with ``core_attrs_candidate_`` being
+            defined in the above description of ``serializable_rep``.
+
+            Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+            then ``core_attrs`` is set to ``core_attrs_candidate``. This option
+            is desired primarily when the user wants to avoid potentially
+            expensive copies and/or conversions of the `dict` values of
+            ``core_attrs_candidate``, as it is guaranteed that no copies or
+            conversions are made in this case.
+
         Returns
         -------
-        pre_serializable_obj : :class:`fancytypes.PreSerializable`
+        pre_serializable_obj : Current class
             An instance constructed from the serialized representation.
 
         """
@@ -752,19 +929,33 @@ class PreSerializable(Checkable):
         
         try:
             serializable_rep = json.loads(serialized_rep)
-        except json.decoder.JSONDecodeError:
-            raise ValueError(_pre_serializable_err_msg_11)
-        except BaseException as err:
-            raise err
+        except:
+            raise json.decoder.JSONDecodeError(_pre_serializable_err_msg_8)
 
-        pre_serializable_obj = cls.de_pre_serialize(serializable_rep)
+        kwargs = {"validation_and_conversion_funcs": \
+                  validation_and_conversion_funcs,
+                  "pre_serialization_funcs": \
+                  pre_serialization_funcs,
+                  "de_pre_serialization_funcs": \
+                  de_pre_serialization_funcs,
+                  "serializable_rep": \
+                  serializable_rep,
+                  "skip_validation_and_conversion": \
+                  skip_validation_and_conversion}
+        pre_serializable_obj = cls.de_pre_serialize(**kwargs)
                 
         return pre_serializable_obj
 
 
 
     @classmethod
-    def load(cls, filename):
+    def load(cls,
+             validation_and_conversion_funcs,
+             pre_serialization_funcs,
+             de_pre_serialization_funcs,
+             filename,
+             skip_validation_and_conversion=\
+             _default_skip_validation_and_conversion):
         r"""Construct an instance from a serialized representation that is 
         stored in a JSON file.
 
@@ -773,27 +964,81 @@ class PreSerializable(Checkable):
 
         Parameters
         ----------
+        validation_and_conversion_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
+        de_pre_serialization_funcs : `dict`
+            Same as the constructor parameter of the same name.
         filename : `str`
             The relative or absolute path to the JSON file that is storing the
             serialized representation of an instance.
 
+            ``filename`` is expected to be such that ``json.load(open(filename,
+            "r"))`` does not raise an exception.
+
+            Let ``serializable_rep=json.load(open(filename, "r"))``.
+
+            ``filename`` is also expected to be such that
+            ``de_pre_serialization_funcs[key](serializable_rep[key])`` does not
+            raise an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+
+            Let ``core_attrs_candidate`` be a `dict` object that has the same
+            keys as ``validation_and_conversion_funcs`` where for each `dict`
+            key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs_candidate[key]`` is set to
+            de_pre_serialization_funcs[key](serializable_rep[key])``.
+
+            ``filename`` is also expected to be such that
+            ``validation_and_conversion_funcs[key](core_attrs_candidate)`` does
+            not raising an exception for each `dict` key ``key`` in
+            ``validation_and_conversion_funcs``.
+        skip_validation_and_conversion : `bool`
+            Let ``core_attrs`` denote the attribute
+            :attr:`fancytypes.PreSerializable.core_attrs`, which is a `dict`
+            object.
+
+            If ``skip_validation_and_conversion`` is set to ``False``, then for
+            each key ``key`` in ``validation_and_conversion_funcs``,
+            ``core_attrs[key]`` is set to ``validation_and_conversion_funcs[key]
+            (core_attrs_candidate)``, with ``core_attrs_candidate_`` being
+            defined in the above description of ``serializable_rep``.
+
+            Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+            then ``core_attrs`` is set to ``core_attrs_candidate``. This option
+            is desired primarily when the user wants to avoid potentially
+            expensive copies and/or conversions of the `dict` values of
+            ``core_attrs_candidate``, as it is guaranteed that no copies or
+            conversions are made in this case.
+
         Returns
         -------
-        pre_serializable_obj : :class:`fancytypes.PreSerializable`
+        pre_serializable_obj : Current class
             An instance constructed from the serialized representation
             stored in the JSON file.
 
         """
         kwargs = {"obj": filename, "obj_name": "filename"}
-        filename = czekitout.convert.to_str_from_path_like(**kwargs)
+        filename = czekitout.convert.to_str_from_str_like(**kwargs)
         
         try:
-            with open(filename, 'r') as file_obj:
+            with open(filename, "r") as file_obj:
                 serializable_rep = json.load(file_obj)
         except:
-            raise IOError(_pre_serializable_err_msg_12.format(filename))
+            raise IOError(_pre_serializable_err_msg_9.format(filename))
 
-        pre_serializable_obj = cls.de_pre_serialize(serializable_rep)
+        kwargs = {"validation_and_conversion_funcs": \
+                  validation_and_conversion_funcs,
+                  "pre_serialization_funcs": \
+                  pre_serialization_funcs,
+                  "de_pre_serialization_funcs": \
+                  de_pre_serialization_funcs,
+                  "serializable_rep": \
+                  serializable_rep,
+                  "skip_validation_and_conversion": \
+                  skip_validation_and_conversion}
+        pre_serializable_obj = cls.de_pre_serialize(**kwargs)
                 
         return pre_serializable_obj
 
@@ -816,203 +1061,156 @@ class PreSerializable(Checkable):
 
 
 class PreSerializableAndUpdatable(PreSerializable):
-    r"""A type with updatable core attributes, that is pre-serializable, that 
-    can be constructed from a serializable representation, and that enforces 
-    validation upon construction.
+    r"""A type that is pre-serializable, that can be constructed from a 
+    serializable representation, that can perform user-defined validations 
+    and conversions of a set of parameters upon construction, and that has an
+    updatable subset of attributes.
 
     We define pre-serialization as the process of converting an object into a
     form that can be subsequently serialized into a JSON format. We refer to
     objects resulting from pre-serialization as serializable objects.
 
     We define de-pre-serialization as the process of converting a serializable
-    object into its original type, i.e. de-pre-serialization is the reverse
-    process of pre-serialization.
-
-    **Note**: One cannot create instances of
-    :class:`fancytypes.PreSerializableAndUpdatable` without throwing an
-    error. In order to make proper use of the
-    :class:`fancytypes.PreSerializableAndUpdatable` class, one must define a
-    subclass which inherits from it and set three private class attributes in
-    the definition: ``_validation_and_conversion_funcs``,
-    ``_pre_serialization_funcs``, and ``_de_pre_serialization_funcs``.
-
-    ``_validation_and_conversion_funcs`` is a `dict` storing validation and
-    conversion functions to be applied to the construction parameters
-    [represented by the `dict` ``ctor_params`` below]: for each `dict` key
-    ``ctor_param_name`` in ``ctor_params``,
-    ``_validation_and_conversion_funcs[ctor_param_name]`` yields the validation
-    and conversion function to be applied to the construction parameter object
-    ``ctor_params[ctor_param_name]``. Note that the `dict` keys of
-    ``_validation_and_conversion_funcs`` must match those exactly of
-    ``ctor_params``. Furthermore, for each `dict` key ``ctor_param_name``,
-    ``_validation_and_conversion_funcs[ctor_param_name]`` should take
-    ``ctor_params`` as the only input argument and return the potentially
-    converted construction parameter with the name specified by
-    ``ctor_param_name``.
-
-    ``_pre_serialization_funcs`` is a `dict` storing pre-serialization functions
-    to be applied to the core attributes [represented by the instance attribute
-    :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` introduced below]:
-    for each `dict` key ``core_attr_name`` in
-    :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` [the latter of
-    which we denote here as ``core_attrs``],
-    ``_pre_serialization_funcs[core_attr_name]`` yields the pre-serialization
-    function to be applied to the core attribute ``core_attrs[core_attr_name]``,
-    upon calling the method
-    :meth:`fancytypes.PreSerializableAndUpdatable.pre_serialize`. Note that the
-    `dict` keys of ``_pre_serialization_funcs`` must match those exactly of
-    ``core_attrs`` and ``ctor_params``. Furthermore, for each `dict` key
-    ``core_attr_name``, ``_pre_serialization_funcs[core_attr_name]`` should take
-    ``core_attrs`` as the only input argument and return the serializable
-    representation of the core attribute with the name specified by
-    ``core_attr_name``.
-
-    ``_de_pre_serialization_funcs`` is a `dict` storing de-pre-serialization
-    functions to be applied to serializable representations of the core
-    attributes of any instance of the
-    :class:`fancytypes.PreSerializableAndUpdatable` class or subclass: for each
-    `dict` key ``core_attr_name`` in ``core_attrs``,
-    ``_de_pre_serialization_funcs[core_attr_name]`` yields the
-    de-pre-serialization function to be applied to the serializable
-    representation of the core attribute with the name specified by
-    ``core_attr_name``, upon calling the class method
-    :meth:`fancytypes.PreSerializableAndUpdatable.de_pre_serialize`. Note that
-    the `dict` keys of ``_de_pre_serialization_funcs`` must match those exactly
-    of ``core_attrs`` and ``ctor_params``. Furthermore, for each `dict` key
-    ``core_attr_name``, ``_de_pre_serialization_funcs[core_attr_name]`` should
-    take the serializable representation of the core attribute with the name
-    specified by ``core_attr_name`` as the only input argument and return the
-    de-serialized form of said core attribute.
+    object into an instance of the type :class:`fancytypes.PreSerializable` or a
+    subclass thereof, i.e. de-pre-serialization is the reverse process of
+    pre-serialization.
 
     Parameters
     ----------
-    ctor_params : `dict`
-        A `dict` representation of the construction parameters: each `dict` key
-        is a `str` representing the name of a construction parameter, and the
-        corresponding `dict` value is the object to which said construction
-        parameter is set. During construction, each construction parameter is
-        potentially converted, and then subsequently set to a so-called "core
-        attribute".
+    validation_and_conversion_funcs : `dict`
+        A `dict` object of callable objects.
+    pre_serialization_funcs : `dict`
+        A `dict` object of callable objects that has the same keys as
+        ``validation_and_conversion_funcs``. 
+
+        Let ``core_attrs_candidate_1`` be any `dict` object that has the same
+        keys as ``validation_and_conversion_funcs`` where for each `dict` key
+        ``key`` in ``validation_and_conversion_funcs``,
+        ``validation_and_conversion_funcs[key](core_attrs_candidate_1)`` does
+        not raise an exception.
+
+        For each `dict` key ``key`` in ``validation_and_conversion_funcs``,
+        ``pre_serialization_funcs[key](core_attrs_candidate_1[key])`` is
+        expected to yield a serializable object, i.e. it should yield an object
+        that can be passed into the function ``json.dumps`` without raising an
+        exception.
+    de_pre_serialization_funcs : `dict`
+        A `dict` object of callable objects that has the same keys as
+        ``validation_and_conversion_funcs``. 
+
+        Let ``serializable_rep`` be a `dict` object that has the same keys as
+        ``validation_and_conversion_funcs`` where for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``, ``serializable_rep[key]`` is set to
+        ``pre_serialization_funcs[key](core_attrs_candidate_1[key])``, with
+        ``core_attrs_candidate_1`` being defined in the above description of
+        ``pre_serialization_funcs``.
+
+        The items of ``de_pre_serialization_funcs`` are expected to be set to
+        callable objects that would lead to
+        ``de_pre_serialization_funcs[key](serializable_rep[key])`` not raising
+        an exception for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``.
+
+        Let ``core_attrs_candidate_2`` be a `dict` object that has the same keys
+        as ``validation_and_conversion_funcs`` where for each `dict` key ``key``
+        in ``validation_and_conversion_funcs``, ``core_attrs_candidate_2[key]``
+        is set to ``de_pre_serialization_funcs[key](serializable_rep[key])``.
+
+        The items of ``de_pre_serialization_funcs`` are also expected to be set
+        to callable objects that would lead to
+        ``validation_and_conversion_funcs[key](core_attrs_candidate_2)`` not
+        raising an exception for each `dict` key ``key`` in
+        ``validation_and_conversion_funcs``.
+    params_to_be_mapped_to_core_attrs : `dict`
+        A `dict` object that has the same keys as
+        ``validation_and_conversion_funcs``.
     skip_validation_and_conversion : `bool`
-        If ``skip_validation_and_conversion`` is set to ``False``, then the
-        validation and conversion functions specified in
-        :attr:`fancytypes.Updatable.validation_and_conversion_funcs` are
-        applied to the construction parameters ``ctor_params``.
+        Let ``core_attrs`` denote the attribute
+        :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs`, which is a 
+        `dict` object.
+
+        If ``skip_validation_and_conversion`` is set to ``False``, then for each
+        key ``key`` in ``validation_and_conversion_funcs``, ``core_attrs[key]``
+        is set to ``validation_and_conversion_funcs[key]
+        (params_to_be_mapped_to_core_attrs)``.
 
         Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-        then the validation and conversion steps are skipped. This option is
-        desired primarily when the user wants to avoid potentially expensive
-        copies and/or conversions of the `dict` values of ``ctor_params``, as no
+        then ``core_attrs`` is set to
+        ``params_to_be_mapped_to_core_attrs``. This option is desired primarily
+        when the user wants to avoid potentially expensive copies and/or
+        conversions of the `dict` values of
+        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
         copies or conversions are made in this case.
 
     Attributes
     ----------
-    core_attrs : `dict`, read-only
-        A `dict` representation of the core attributes: each `dict` key is a
-        `str` representing the name of a core attribute, and the corresponding
-        `dict` value is the object to which said core attribute is set.
-
-        **Note**: If the currently documented class, which we denote here as
-        ``cls``, is neither :class:`PreSerializable` nor
-        :class:`PreSerializableAndUpdatable`, then in order for ``cls`` to be
-        well-behaved, it must satisfy ``instance.core_attrs ==
-        cls(**instance.core_attrs).core_attrs``, where ``instance`` is any
-        instance of ``cls`` that was constructed without error.
     validation_and_conversion_funcs : `dict`, read-only
-        A `dict` storing validation and conversion functions that are applied to
-        the construction parameters ``ctor_params`` and to any of the core
-        attributes that are to be updated: for each `dict` key
-        ``ctor_param_name`` in ``ctor_attrs``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` yields the
-        validation and conversion function that is applied to the construction
-        parameter object ``ctor_params[ctor_param_name]``. Note that the `dict`
-        keys of ``validation_and_conversion_funcs`` must match those exactly of
-        ``ctor_attrs``. Furthermore, for each `dict` key ``ctor_param_name``,
-        ``validation_and_conversion_funcs[ctor_param_name]`` should take
-        ``ctor_params`` or ``core_attrs`` as the only input argument and return
-        the potentially converted construction parameter or core attribute with
-        the name specified by ``ctor_param_name``.
+        Same as the constructor parameter of the same name.
     pre_serialization_funcs : `dict`, read-only
-        A `dict` storing pre-serialization functions that are applied to the
-        core attributes ``core_attrs``: for each `dict` key ``core_attr_name``
-        in ``core_attrs``, ``pre_serialization_funcs[core_attr_name]`` yields
-        the pre-serialization function that is applied to the core attribute
-        ``core_attrs[core_attr_name]``, upon calling the method
-        :meth:`fancytypes.PreSerializable.pre_serialize`. Note that the `dict`
-        keys of ``pre_serialization_funcs`` must match those exactly of
-        ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
-        ``pre_serialization_funcs[core_attr_name]`` should take ``core_attrs``
-        as the only input argument and return the serializable representation of
-        the core attribute with the name specified by ``core_attr_name``.
+        Same as the constructor parameter of the same name.
     de_pre_serialization_funcs : `dict`, read-only
-        A `dict` storing de-pre-serialization functions that are applied to
-        serializable representations of the core attributes ``core_attrs``: for
-        each `dict` key ``core_attr_name`` in ``core_attrs``,
-        ``de_pre_serialization_funcs[core_attr_name]`` yields the
-        de-pre-serialization function that is applied to the serializable
-        representation of the core attribute ``core_attrs[core_attr_name]``,
-        upon calling the method
-        :meth:`fancytypes.PreSerializable.de_pre_serialize`. Note that the
-        `dict` keys of ``de_pre_serialization_funcs`` must match those exactly
-        of ``core_attrs``. Furthermore, for each `dict` key ``core_attr_name``,
-        ``de_pre_serialization_funcs[core_attr_name]`` should take the
-        serializable representation of the core attribute with the name
-        specified by ``core_attr_name`` as the only input argument and return
-        the de-serialized form of said core attribute.
+        Same as the constructor parameter of the same name.
+    core_attrs : `dict`, read-only
+        The "core attributes", represented as a `dict` object. For each `dict`
+        key ``key`` in ``core_attrs``,
+        ``validation_and_conversion_funcs[key](core_attrs)`` is expected to not
+        raise an exception.
 
     """
     def __init__(self,
-                 ctor_params,
+                 validation_and_conversion_funcs,
+                 pre_serialization_funcs,
+                 de_pre_serialization_funcs,
+                 params_to_be_mapped_to_core_attrs,
                  skip_validation_and_conversion=\
                  _default_skip_validation_and_conversion):
-        PreSerializable.__init__(self,
-                                 ctor_params,
-                                 skip_validation_and_conversion)
+        kwargs = {key: val
+                  for key, val in locals().items()
+                  if (key not in ("self", "__class__"))}
+        PreSerializable.__init__(self, **kwargs)
         
         return None
 
 
 
     def update(self,
-               core_attr_subset,
+               new_core_attr_subset_candidate,
                skip_validation_and_conversion=\
                _default_skip_validation_and_conversion):
         r"""Update a subset of the core attributes.
 
         Parameters
         ----------
-        core_attr_subset : `dict`
-            A `dict` specifying how to update a subset of the core attributes:
-            each `dict` key of ``core_attr_subset`` that is also a key of the
-            instance attribute
-            :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` is a `str`
-            representing the name of a core attribute, and the corresponding
-            `dict` value is the object to which said core attribute is to be
-            set. Any `dict` keys of ``core_attr_subset`` that are not keys of
-            the instance attribute
-            :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` are
-            ignored in the update procedure along with the corresponding `dict`
-            values.
+        new_core_attr_subset_candidate : `dict`
+            A `dict` object.
         skip_validation_and_conversion : `bool`
-            If ``skip_validation_and_conversion`` is set to ``False``, then a
-            upon updating the subset of core attributes, the corresponding
-            validation and conversion functions specified in
+            Let ``core_attrs`` and ``validation_and_conversion_funcs`` denote
+            the attributes
+            :attr:`fancytypes.PreSerializableAndUpdatable.core_attrs` and
             :attr:`fancytypes.PreSerializableAndUpdatable.validation_and_conversion_funcs`
-            are applied.
+            respectively, which are both `dict` objects.
+
+            If ``skip_validation_and_conversion`` is set to ``False``, then for
+            each key ``key`` in ``core_attrs`` that is also in
+            ``new_core_attr_subset_candidate``, ``core_attrs[key]`` is set to
+            ``validation_and_conversion_funcs[key]
+            (new_core_attr_subset_candidate)``.
 
             Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-            then the validation and conversion steps are skipped. This option is
-            desired primarily when the user wants to avoid potentially expensive
-            copies and/or conversions of the `dict` values of
-            ``core_attr_subset``, as no copies or conversions are made in this
-            case.
+            then for each key ``key`` in ``core_attrs`` that is also in
+            ``new_core_attr_subset_candidate``, ``core_attrs[key]`` is set to
+            ``new_core_attr_subset_candidate[key]``. This option is desired
+            primarily when the user wants to avoid potentially expensive copies
+            and/or conversions of the `dict` values of
+            ``new_core_attr_subset_candidate``, as it is guaranteed that no
+            copies or conversions are made in this case.
 
         """
         kwargs = \
             {"skip_validation_and_conversion": \
              skip_validation_and_conversion,
-             "new_core_attr_subset": \
-             core_attr_subset,
+             "new_core_attr_subset_candidate": \
+             new_core_attr_subset_candidate,
              "old_core_attr_set": \
              self._core_attrs,
              "validation_and_conversion_funcs": \
@@ -1043,6 +1241,9 @@ class PreSerializableAndUpdatable(PreSerializable):
             attribute is set.
 
         """
+        params = {"deep_copy": deep_copy}
+        deep_copy = _check_and_convert_deep_copy(params)
+        
         core_attrs = (self.core_attrs
                       if (deep_copy == True)
                       else self._core_attrs)
@@ -1055,44 +1256,50 @@ class PreSerializableAndUpdatable(PreSerializable):
 ## Define error messages ##
 ###########################
 
-_checkable_err_msg_1 = \
-    ("The objects ``ctor_params`` and ``validation_and_conversion_funcs`` have "
-     "mismatching key sets.")
-_checkable_err_msg_2 = \
+_check_and_convert_validation_and_conversion_funcs_err_msg_1 = \
     ("The object ``validation_and_conversion_funcs`` must be a dictionary with "
      "values set to only callable objects.")
 
+_check_and_convert_core_attrs_candidate_err_msg_1 = \
+    ("The objects ``{}`` and ``validation_and_conversion_funcs`` must have "
+     "matching key sets.")
+
+_preliminary_check_of_pre_serialization_funcs_err_msg_1 = \
+    ("The objects ``pre_serialization_funcs`` and "
+     "``validation_and_conversion_funcs`` must have matching key sets.")
+_preliminary_check_of_pre_serialization_funcs_err_msg_2 = \
+    ("The objects ``pre_serialization_funcs`` must be a dictionary with values "
+     "set to only callable objects.")
+
+_preliminary_check_of_de_pre_serialization_funcs_err_msg_1 = \
+    ("The objects ``de_pre_serialization_funcs`` and "
+     "``validation_and_conversion_funcs`` must have matching key sets.")
+_preliminary_check_of_de_pre_serialization_funcs_err_msg_2 = \
+    ("The objects ``de_pre_serialization_funcs`` must be a dictionary with "
+     "values set to only callable objects.")
+
 _pre_serializable_err_msg_1 = \
-    ("The object ``ctor_params`` and the private class attribute "
-     "``_pre_serialization_funcs`` have mismatching key sets.")
-_pre_serializable_err_msg_2 = \
-    ("The private class attribute ``_pre_serialization_funcs`` must be a "
-     "dictionary with values set to only callable objects.")
-_pre_serializable_err_msg_3 = \
-    ("The object ``ctor_params`` and the private class attribute "
-     "``_de_pre_serialization_funcs`` have mismatching key sets.")
-_pre_serializable_err_msg_4 = \
-    ("The private class attribute ``_de_pre_serialization_funcs`` must be a "
-     "dictionary with values set to only callable objects.")
-_pre_serializable_err_msg_5 = \
     ("An error occurred in testing the instance method ``pre_serialize``: see "
      "the remaining traceback for details.")
-_pre_serializable_err_msg_6 = \
-    ("An error occurred in testing part of the class method "
-     "``de_pre_serialize``: see the remaining traceback for details.")
-_pre_serializable_err_msg_7 = \
+_pre_serializable_err_msg_2 = \
+    ("An error occurred in testing part of the de-pre-serialization process of "
+     "the class: see the remaining traceback for details.")
+_pre_serializable_err_msg_3 = \
     ("The object ``serializable_rep`` is missing the key ``'{}'``.")
-_pre_serializable_err_msg_8 = \
-    ("An error occurred in attempting to construct the object ``{}`` from a "
-     "serializable representation.")
-_pre_serializable_err_msg_9 = \
+_pre_serializable_err_msg_4 = \
+    ("An error occurred in attempting to de-pre-serialize the object "
+     "``serializable_rep``.")
+_pre_serializable_err_msg_5 = \
+    ("Failed to perform de-pre-serialization: see the remaining traceback for "
+     "details.")
+_pre_serializable_err_msg_6 = \
     ("Cannot save the serialized representation to a file at the path ``'{}'`` "
      "because a file already exists there and the object ``overwrite`` was set "
      "to ``False``, which prohibits overwriting the original file.")
-_pre_serializable_err_msg_10 = \
+_pre_serializable_err_msg_7 = \
     ("An error occurred in trying to save the serialized representation to the "
      "file at the path ``'{}'``: see the traceback for details.")
-_pre_serializable_err_msg_11 = \
+_pre_serializable_err_msg_8 = \
     ("The object ``serialized_rep`` must be a valid JSON document.")
-_pre_serializable_err_msg_12 = \
+_pre_serializable_err_msg_9 = \
     ("The filename ``'{}'`` is invalid: see the traceback for details.")
