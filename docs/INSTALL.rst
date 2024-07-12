@@ -3,119 +3,72 @@
 Installation instructions
 =========================
 
-Install fancytypes
-------------------
+Installing fancytypes
+---------------------
 
-First, open up the appropriate command line interface. On Unix-based systems,
-you would open a terminal. On Windows systems you would open an Anaconda Prompt
-as an administrator.
+For all installation scenarios, first open up the appropriate command line
+interface. On Unix-based systems, you would open a terminal. On Windows systems
+you would open an Anaconda Prompt as an administrator.
 
-Next, assuming that you have downloaded/cloned the ``fancytypes`` git
-repository, change into the root of said repository, and run the following
+Installing fancytypes using pip
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest way to install ``fancytypes`` using ``pip`` is to run the following
+command::
+
+  pip install fancytypes
+
+The above command will install the latest stable version of ``fancytypes``.
+
+To install the latest development version from the main branch of the
+`fancytypes GitHub repository <https://github.com/mrfitzpa/fancytypes>`_, one
+must first clone the repository by running the following command::
+
+  git clone https://github.com/mrfitzpa/fancytypes.git
+
+Next, change into the root of the cloned repository, and then run the following
 command::
 
   pip install .
 
 Note that you must include the period as well. The above command executes a
-standard installation of ``empix``. Upon completing the standard installation of
-``fancytypes``, a set of libraries should be installed including ``numpy``,
-``pytest``, and ``czekitout``.
+standard installation of ``fancytypes``.
 
 Optionally, for additional features in ``fancytypes``, one can install
 additional dependencies upon installing ``fancytypes``. To install a subset of
-additional dependencies, run the following command from the root of the
-repository::
+additional dependencies (along with the standard installation), run the
+following command from the root of the repository::
 
   pip install .[<selector>]
 
 where ``<selector>`` can be one of the following:
 
-* ``doc``: to install the dependencies necessary for documentation generation;
-* ``examples``: to install the dependencies necessary for running any example
-  notebooks;
-* ``all``: to install all additional dependencies.
-    
+* ``tests``: to install the dependencies necessary for running unit tests;
+* ``examples``: to install the dependencies necessary for running the jupyter
+  notebooks stored in ``<root>/examples``, where ``<root>`` is the root of the
+  repository;
+* ``docs``: to install the dependencies necessary for documentation generation;
+* ``all``: to install all of the above optional dependencies.
 
-Note that you must include the period as well. This will install ``fancytypes``
-along with all of its dependencies, namely ``numpy``, ``czekitout``, and
-``pytest``.
+Installing fancytypes using conda
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update fancytypes
------------------
+To install ``fancytypes`` using the ``conda`` package manager, run the following
+command::
 
-If you, or someone else has made changes to this library, you can reinstall it
-by issuing the following command from the root of the repository::
-  
-  pip install .
+  conda install -c conda-forge fancytypes
 
-or the command::
+The above command will install the latest stable version of ``fancytypes``.
 
-  pip install .[<selector>]
+Uninstalling fancytypes
+-----------------------
 
-where ``<selector>`` was described in the previous section.
-
-Uninstall fancytypes
---------------------
-
-To uninstall ``fancytypes``, run the following command from the root of the
-repository::
+If ``fancytypes`` was installed using ``pip``, then to uninstall, run the
+following command from the root of the repository::
 
   pip uninstall fancytypes
 
-Exploring examples of using fancytypes
---------------------------------------
+If ``fancytypes`` was installed using ``conda``, then to uninstall, run the
+following command from the root of the repository::
 
-Examples of using ``fancytypes`` can be found in a set of notebooks in the
-directory ``<root>/examples``, where ``<root>`` is the root of the
-repository. The dependencies required for running these example notebooks can be
-installed by running the following command from the root of the repository::
-
-  pip install .[examples]
-
-or the command::
-
-  pip install .[all]
-
-Note that the latter command will install all extra dependencies of
-``fancytypes``.
-
-Since the repository tracks the notebooks under their original basenames, we
-recommend that you copy whatever original notebook of interest and rename it to
-whatever other basename before executing any cells. This way you can explore any
-notebook by executing and modifying cells without changing the originals, which
-are being tracked by git.
-
-Generating documention files
-----------------------------
-
-To generate documentation in html format from source files, you will also need
-to install several other packages. This can be done by running the following
-command from the root of the repository::
-
-  pip install .[doc]
-
-or the command::
-
-  pip install .[all]
-
-Note that the latter command will install all extra dependencies of
-``fancytypes``.
-
-Next, assuming that you are in the root of the repository, that you have
-installed all the prerequisite packages, and that ``fancytypes`` has been
-installed, you can generate the ``fancytypes`` documentation html files by
-issuing the following commands within your virtual environment::
-
-  cd docs
-  make html
-
-This will generate a set of html files in ``./_build/html`` containing the
-documentation of ``fancytypes``. You can then open any of the files using your
-favorite web browser.
-
-If ``fancytypes`` has been updated, the documentation has most likely changed as
-well. To update the documentation simply run::
-
-  make html
-
-again to generate the new documentation.
+  conda remove fancytypes

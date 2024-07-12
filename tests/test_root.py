@@ -417,11 +417,19 @@ def test_7_of_PreSerializableAndUpdatable():
     cls_alias = fancytypes.PreSerializableAndUpdatable
     fancytype_instance = cls_alias(**kwargs)
 
+    serializable_rep = fancytype_instance.pre_serialize()
+    serializable_rep["foo"] = None
+
+    del kwargs["params_to_be_mapped_to_core_attrs"]
+    kwargs["serializable_rep"] = serializable_rep
+    with pytest.raises(ValueError) as err_info:
+        cls_alias.de_pre_serialize(**kwargs)
+
     filename = "fancytype.json"
     with pytest.raises(IOError) as err_info:
         fancytype_instance.dump(filename, overwrite=True)
 
-    del kwargs["params_to_be_mapped_to_core_attrs"]
+    del kwargs["serializable_rep"]
     kwargs["serialized_rep"] = "foo"
     with pytest.raises(ValueError) as err_info:
         cls_alias.loads(**kwargs)
@@ -433,6 +441,29 @@ def test_7_of_PreSerializableAndUpdatable():
     with pytest.raises(IOError) as err_info:
         cls_alias.load(**kwargs)
         
+    return None
+
+
+
+def test_8_of_PreSerializableAndUpdatable():
+    cls_alias = fancytypes.PreSerializableAndUpdatable
+
+    fancytype_instances = (cls_alias(),
+                           cls_alias.de_pre_serialize(),
+                           cls_alias.loads())
+
+    for fancytype_instance in fancytype_instances:
+        fancytype_instance.update()
+        
+        assert fancytype_instance.get_core_attrs() == dict()
+        assert fancytype_instance.core_attrs == dict()
+        assert fancytype_instance.validation_and_conversion_funcs == dict()
+        assert fancytype_instance.pre_serialization_funcs == dict()
+        assert fancytype_instance.de_pre_serialization_funcs == dict()
+
+    with pytest.raises(IOError) as err_info:
+        cls_alias.load()
+
     return None
 
 
@@ -475,6 +506,19 @@ def test_1_of_Updatable():
 
     core_attrs = fancytype_instance.get_core_attrs(deep_copy=True)
     assert core_attrs["slice_obj"] is not slice_obj_1
+
+    return None
+
+
+
+def test_2_of_Updatable():
+    fancytype_instance = fancytypes.Updatable()
+
+    fancytype_instance.update()
+        
+    assert fancytype_instance.get_core_attrs() == dict()
+    assert fancytype_instance.core_attrs == dict()
+    assert fancytype_instance.validation_and_conversion_funcs == dict()
 
     return None
 
