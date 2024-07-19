@@ -552,6 +552,16 @@ def _preliminary_check_of_de_pre_serialization_funcs(params):
 
 
 
+def _check_and_convert_filename(params):
+    current_func_name = inspect.stack()[0][3]
+    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    filename = czekitout.convert.to_str_from_str_like(**kwargs)
+
+    return filename
+
+
+
 def _check_and_convert_overwrite(params):
     current_func_name = inspect.stack()[0][3]
     obj_name = current_func_name.split("_check_and_convert_")[-1]
@@ -997,11 +1007,12 @@ class PreSerializable(Checkable):
         -------
 
         """
-        params = {"overwrite": overwrite}
+        params = {key: val
+                  for key, val in locals().items()
+                  if (key not in ("self", "__class__"))}
+        filename = _check_and_convert_filename(params)
         overwrite = _check_and_convert_overwrite(params)
         
-        kwargs = {"obj": filename, "obj_name": "filename"}
-        filename = czekitout.convert.to_str_from_str_like(**kwargs)
         if pathlib.Path(filename).is_file():
             if not overwrite:
                 raise IOError(_pre_serializable_err_msg_8.format(filename))
@@ -1178,8 +1189,8 @@ class PreSerializable(Checkable):
             stored in the JSON file.
 
         """
-        kwargs = {"obj": filename, "obj_name": "filename"}
-        filename = czekitout.convert.to_str_from_str_like(**kwargs)
+        params = {"filename": filename}
+        filename = _check_and_convert_filename(params)
         
         try:
             with open(filename, "r") as file_obj:
