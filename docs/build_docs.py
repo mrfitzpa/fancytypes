@@ -62,6 +62,8 @@ def _build_doc(version, language, tag):
     subprocess.run("git checkout " + tag, shell=True)
     subprocess.run("git checkout main -- conf.py", shell=True)
     subprocess.run("git checkout main -- _templates/versions.html", shell=True)
+
+    subprocess.run("cd ..; pip install .; cd docs", shell=True)
     
     os.environ["SPHINXOPTS"] = "-D language='{}'".format(language)
     subprocess.run("make html", shell=True)
@@ -92,7 +94,7 @@ os.environ["build_all_docs"] = str(True)
 os.environ["pages_root"] = "https://mrfitzpa.github.io/fancytypes" 
 
 _build_doc("latest", "en", "main")
-_mvdir("./_build/html/", "../pages/")
+_mvdir("./_build/html/", "./pages/")
 
 cmd_output_as_bytes = subprocess.check_output("git tag", shell=True)
 cmd_output = cmd_output_as_bytes.decode("utf-8")
@@ -105,4 +107,7 @@ for tag in release_tags:
     version = tag[1:]
     language = "en"
     _build_doc(version, language, tag)
-    _mvdir("./_build/html/", "../pages/"+version+"/"+language+"/")
+    _mvdir("./_build/html/", "./pages/"+version+"/"+language+"/")
+
+subprocess.run("cd ..; pip install .; cd docs", shell=True)
+_mvdir("./pages", "../pages")
