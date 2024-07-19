@@ -1061,8 +1061,8 @@ class PreSerializable(Checkable):
 
             ``serialized_rep`` is also expected to be such that
             ``validation_and_conversion_funcs[key](core_attrs_candidate)`` does
-            not raising an exception for each `dict` key ``key`` in
-            ``validation_and_conversion_funcs``.
+            not raise an exception for each `dict` key ``key`` in
+            ``serializable_rep``.
         skip_validation_and_conversion : `bool`, optional
             Let ``core_attrs`` denote the attribute
             :attr:`~fancytypes.Checkable.core_attrs`, which is a `dict` object.
@@ -1148,8 +1148,8 @@ class PreSerializable(Checkable):
 
             ``filename`` is also expected to be such that
             ``validation_and_conversion_funcs[key](core_attrs_candidate)`` does
-            not raising an exception for each `dict` key ``key`` in
-            ``validation_and_conversion_funcs``.
+            not raise an exception for each `dict` key ``key`` in
+            ``serializable_rep``.
         skip_validation_and_conversion : `bool`, optional
             Let ``core_attrs`` denote the attribute
             :attr:`~fancytypes.Checkable.core_attrs`, which is a `dict` object.
