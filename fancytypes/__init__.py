@@ -66,7 +66,7 @@ __all__ = ["Checkable",
 
 def _check_and_convert_validation_and_conversion_funcs(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     validation_and_conversion_funcs = czekitout.convert.to_dict(**kwargs).copy()
 
@@ -82,7 +82,7 @@ def _check_and_convert_validation_and_conversion_funcs(params):
 
 def _check_and_convert_skip_validation_and_conversion(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
 
@@ -92,7 +92,7 @@ def _check_and_convert_skip_validation_and_conversion(params):
 
 def _check_and_convert_skip_cls_tests(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     skip_cls_tests = czekitout.convert.to_bool(**kwargs)
 
@@ -144,7 +144,7 @@ def _check_and_convert_core_attrs_candidate(params):
 
 def _check_and_convert_deep_copy(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     deep_copy = czekitout.convert.to_bool(**kwargs)
 
@@ -264,8 +264,6 @@ class Checkable():
 
         """
         raise NotImplementedError(_checkable_err_msg_1)
-
-        return None
 
 
 
@@ -506,7 +504,7 @@ class Updatable(Checkable):
 
 def _preliminary_check_of_pre_serialization_funcs(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_preliminary_check_of_")[-1]
+    obj_name = current_func_name[22:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
 
@@ -530,7 +528,7 @@ def _preliminary_check_of_pre_serialization_funcs(params):
 
 def _preliminary_check_of_de_pre_serialization_funcs(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_preliminary_check_of_")[-1]
+    obj_name = current_func_name[22:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     de_pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
 
@@ -554,7 +552,7 @@ def _preliminary_check_of_de_pre_serialization_funcs(params):
 
 def _check_and_convert_filename(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     filename = czekitout.convert.to_str_from_str_like(**kwargs)
 
@@ -564,7 +562,7 @@ def _check_and_convert_filename(params):
 
 def _check_and_convert_overwrite(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     overwrite = czekitout.convert.to_bool(**kwargs)
 
@@ -1292,7 +1290,7 @@ class PreSerializableAndUpdatable(PreSerializable, Updatable):
 
 def _check_and_convert_namespace_as_dict(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     namespace_as_dict = czekitout.convert.to_dict(**kwargs)
 
@@ -1302,7 +1300,7 @@ def _check_and_convert_namespace_as_dict(params):
 
 def _check_and_convert_ctor_param_names(params):
     current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name.split("_check_and_convert_")[-1]
+    obj_name = current_func_name[19:]
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     ctor_param_names = czekitout.convert.to_tuple_of_strs(**kwargs)
 
