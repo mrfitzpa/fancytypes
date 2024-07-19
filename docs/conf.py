@@ -89,7 +89,8 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.viewcode",
               "sphinx_autodoc_typehints",
               "sphinx.ext.githubpages",
-              "numpydoc"]
+              "sphinx.ext.napoleon"]
+              # "numpydoc"]
 
 
 
@@ -102,7 +103,7 @@ templates_path = ["_templates"]
 # see https://github.com/phn/pytpm/issues/3#issuecomment-12133978
 numpydoc_show_class_members = True
 numpydoc_show_inherited_class_members = True
-numpydoc_class_members_toctree = False
+# numpydoc_class_members_toctree = False
 
 
 
@@ -124,7 +125,7 @@ numfig_secnum_depth = 6
 
 # Cross links to other sphinx documentation websites.
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None),
-                       "numpy": ("https://docs.scipy.org/doc/numpy", None)}
+                       "numpy": ("https://numpy.org/doc/stable", None)}
 
 
 
