@@ -110,4 +110,4 @@ for tag in release_tags:
     _mvdir("./_build/html/", "./pages/"+version+"/"+language+"/")
 
 subprocess.run("cd ..; pip install .; cd docs", shell=True)
-_mvdir("./pages", "../pages")
+_mvdir("./pages/", "../pages/")
