@@ -4,8 +4,10 @@
 # Ignore select directories.
 __pycache__/
 .ipynb_checkpoints/
+tests/
 
 # Ignore select files.
+.python-version
 
 # Ignore .pyc files.
 *.pyc
