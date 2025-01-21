@@ -24,9 +24,6 @@ classes that inherit some subset of the aforementioned features.
 ## Load libraries/packages/modules ##
 #####################################
 
-# For accessing attributes of functions.
-import inspect
-
 # For performing deep copies.
 import copy
 
@@ -65,10 +62,11 @@ __all__ = ["Checkable",
 
 
 def _check_and_convert_validation_and_conversion_funcs(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "validation_and_conversion_funcs"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     validation_and_conversion_funcs = czekitout.convert.to_dict(**kwargs).copy()
+
+    current_func_name = "_check_and_convert_validation_and_conversion_funcs"
 
     for key in validation_and_conversion_funcs:
         validation_and_conversion_func = validation_and_conversion_funcs[key]
@@ -81,8 +79,7 @@ def _check_and_convert_validation_and_conversion_funcs(params):
 
 
 def _check_and_convert_skip_validation_and_conversion(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "skip_validation_and_conversion"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
 
@@ -91,8 +88,7 @@ def _check_and_convert_skip_validation_and_conversion(params):
 
 
 def _check_and_convert_skip_cls_tests(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "skip_cls_tests"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     skip_cls_tests = czekitout.convert.to_bool(**kwargs)
 
@@ -122,9 +118,10 @@ def _check_and_convert_core_attrs_candidate(params):
 
     validation_and_conversion_funcs = params["validation_and_conversion_funcs"]
 
+    current_func_name = "_check_and_convert_core_attrs_candidate"
+
     for key in core_attrs_candidate:
         if key not in validation_and_conversion_funcs:
-            current_func_name = inspect.stack()[0][3]
             unformatted_err_msg = globals()[current_func_name+"_err_msg_1"]
             obj_name = params["name_of_obj_alias_of_core_attrs_candidate"]
             err_msg = unformatted_err_msg.format(obj_name, obj_name, key)
@@ -143,8 +140,7 @@ def _check_and_convert_core_attrs_candidate(params):
 
 
 def _check_and_convert_deep_copy(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "deep_copy"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     deep_copy = czekitout.convert.to_bool(**kwargs)
 
@@ -503,12 +499,13 @@ class Updatable(Checkable):
 
 
 def _preliminary_check_of_pre_serialization_funcs(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[22:]
+    obj_name = "pre_serialization_funcs"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
 
     validation_and_conversion_funcs = params["validation_and_conversion_funcs"]
+
+    current_func_name = "_preliminary_check_of_pre_serialization_funcs"
 
     key_set_1 = sorted(list(validation_and_conversion_funcs.keys()))
     key_set_2 = sorted(list(pre_serialization_funcs.keys()))
@@ -527,12 +524,13 @@ def _preliminary_check_of_pre_serialization_funcs(params):
 
 
 def _preliminary_check_of_de_pre_serialization_funcs(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[22:]
+    obj_name = "de_pre_serialization_funcs"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     de_pre_serialization_funcs = czekitout.convert.to_dict(**kwargs)
 
     validation_and_conversion_funcs = params["validation_and_conversion_funcs"]
+
+    current_func_name = "_preliminary_check_of_de_pre_serialization_funcs"
 
     key_set_1 = sorted(list(validation_and_conversion_funcs.keys()))
     key_set_2 = sorted(list(de_pre_serialization_funcs.keys()))
@@ -551,8 +549,7 @@ def _preliminary_check_of_de_pre_serialization_funcs(params):
 
 
 def _check_and_convert_filename(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "filename"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     filename = czekitout.convert.to_str_from_str_like(**kwargs)
 
@@ -561,8 +558,7 @@ def _check_and_convert_filename(params):
 
 
 def _check_and_convert_overwrite(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "overwrite"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     overwrite = czekitout.convert.to_bool(**kwargs)
 
@@ -920,7 +916,7 @@ class PreSerializable(Checkable):
 
             kwargs = core_attrs_candidate
             key = "skip_validation_and_conversion"
-            if key in inspect.signature(cls.__init__).parameters:
+            if key in cls.__init__.__code__.co_varnames:
                 kwargs[key] = True
             instance_of_current_cls = cls(**kwargs)
 
@@ -1289,8 +1285,7 @@ class PreSerializableAndUpdatable(PreSerializable, Updatable):
 
 
 def _check_and_convert_namespace_as_dict(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "namespace_as_dict"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     namespace_as_dict = czekitout.convert.to_dict(**kwargs)
 
@@ -1299,8 +1294,7 @@ def _check_and_convert_namespace_as_dict(params):
 
 
 def _check_and_convert_ctor_param_names(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "ctor_param_names"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     ctor_param_names = czekitout.convert.to_tuple_of_strs(**kwargs)
 
@@ -1315,12 +1309,13 @@ def _return_subset_of_funcs_from_given_namespace(namespace_as_dict,
     namespace_as_dict = _check_and_convert_namespace_as_dict(params)
     ctor_param_names = _check_and_convert_ctor_param_names(params)
 
+    current_func_name = "_return_subset_of_funcs_from_given_namespace"
+
     subset_of_funcs = dict()
     for ctor_param_name in ctor_param_names:
         func_name = func_name_prefix + ctor_param_name
         
         if func_name not in namespace_as_dict:
-            current_func_name = inspect.stack()[0][3]
             unformatted_err_msg = globals()[current_func_name+"_err_msg_1"]
             err_msg = unformatted_err_msg.format(func_name)
             raise KeyError(err_msg)
