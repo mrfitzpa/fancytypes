@@ -42,8 +42,7 @@ tests = [
     "pytest-cov"
 ]
 examples = [
-    "jupyter",
-    "ipympl"
+    "jupyter"
 ]
 docs = [
     "sphinx",
